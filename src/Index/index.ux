@@ -1,0 +1,151 @@
+<template>
+    <div class="luochu-page">
+        <div class="flexible-tabs">
+            <tabs onchange="changeTabactive" index="{{currentIndex}}">
+                <tab-content class="flexible-tab-content">
+                    <div class="tab-content-section">
+                        <Bookstorage if="{{tabItems[0].show}}"></Bookstorage>
+                    </div>
+                    <div class="tab-content-section">
+                        <Bookcase if="{{tabItems[1].show && loginState}}"></Bookcase>
+                        <Login if="{{tabItems[1].show && !loginState}}"></Login>
+                    </div>
+                    <div class="tab-content-section">
+                        <Mine if="{{tabItems[2].show}}" data="{{userData}}"></Mine>
+                    </div>
+                </tab-content>
+            </tabs>
+            <div class="flexible-tabbar">
+                <div for="{{(index, item) in tabItems}}" class="tab-item" onclick="clickTabBar(index)">
+                    <image class="tab-icon" src="{{item.icon[currentIndex === index ? 1 : 0]}}"></image>
+                    <text class="{{currentIndex === index ? 'active' : 'tab-text'}}">{{item.text}}</text>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<import name="Bookstorage" src="../Bookstorage/index"></import>
+<import name="Bookcase" src="../Bookcase/index"></import>
+<import name="Mine" src="../Mine/index"></import>
+<import name="Login" src="../Views/Login"></import>
+
+<script>
+    import api from '../api/personData';
+    import Authentication from '../utils/authentication';
+    import ReadingConfig from "../utils/readingConfig";
+    import router from '@system.router';
+    export default {
+        data() {
+            return {
+                currentIndex: 0,
+                loginState: false,
+                userData: {},
+                isStrike: true,
+                tabItems: [
+                    {
+                        text: '书城',
+                        icon: ['../Common/imgs/bookstorage.png', '../Common/imgs/bookstorage-active.png'],
+                        show: true
+                    },
+                    {
+                        text: '书架',
+                        icon: ['../Common/imgs/bookbase.png', '../Common/imgs/bookbase-active.png'],
+                        show: false
+                    },
+                    {
+                        text: '我的',
+                        icon: ['../Common/imgs/user.png', '../Common/imgs/user-active.png'],
+                        show: false
+                    }
+                ],
+            }
+        },
+        onShow() {
+            if (this.isStrike) {
+                this.getMine();
+            }
+        },
+        onInit() {
+            Authentication.getLoginState().then(res => {
+                this.loginState = res;
+                this.getMine();
+            })
+        },
+        getMine() {
+            this.isStrike = false;
+            api.personInfo().then(res => {
+                this.userData = res.data;
+                Authentication.setUserData(res.data)
+                this.isStrike = true
+            })
+        },
+        changeTabactive(evt) {
+            this.changeCurrent(evt.index)
+        },
+        clickTabBar(index) {
+            this.changeCurrent(index)
+        },
+        changeCurrent(index) {
+            if (index == 1 && !this.loginState) {
+                ReadingConfig.setRoute({
+                    uri: router.getState().name,
+                    params: {
+                        currentIndex: 1
+                    }
+                })
+                this.$page.setTitleBar({ text: '登录' });
+                this.tabItems[index].show = true
+                this.currentIndex = index
+            } else{
+                this.$page.setTitleBar({ text: this.tabItems[index].text })
+                this.tabItems[index].show = true
+                this.currentIndex = index
+            }
+        }
+    }
+</script>
+
+<style>
+    .luochu-page {
+        background-color: #ececec;
+    }
+
+    .luochu-page .flexible-tabs {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .flexible-tabs .flexible-tabbar {
+        display: flex;
+        border-top-width: 2px;
+        border-top-color: #cecece;
+        height: 100px;
+    }
+
+    .flexible-tabbar .tab-item {
+        flex: 1;
+        /* padding: 10px; */
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        font-size: 22px;
+        background-color: #ffffff;
+    }
+
+    .tab-item .tab-icon {
+        width: 40px;
+        height: 40px;
+        /* padding: 5px; */
+    }
+
+    .tab-item .tab-text {
+        font-size: 22px;
+        color: #919292;
+    }
+
+    .tab-item .active {
+        font-size: 22px;
+        color: #f76c5b;
+    }
+</style>

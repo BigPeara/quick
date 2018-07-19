@@ -1,0 +1,90 @@
+<import name="topic" src="../../Components/topic/index.ux"></import>
+<template>
+    <refresh @refresh="refresh" refreshing="{{isRefreshing}}">
+    <div class="comments"> 
+        <list class="book-list" onscrollbottom="loadMoreData">
+            <block for="item in commentList">
+                <list-item type="product" class="content-item">
+                    <topic data="{{item}}"></topic>
+                </list-item>
+            </block>
+            <!-- 加载更多，type属性自定义命名为loadMore -->
+            <list-item type="loadMore" class="load-more">
+                <progress type="circular" show="{{hasMoreData}}"></progress>
+                <text show="{{hasMoreData}}">加载更多</text>
+                <text show="{{!hasMoreData && !isRefreshing}}">我是有底线的</text>
+            </list-item>
+        </list>
+    </div>
+</template>
+<script>
+    import api from '../../api/bookData'
+    export default{
+        data:{
+            bid: '',
+            page: 1,
+            commentList: [],
+            hasMoreData: false,
+            isRefreshing: true
+        },
+        onInit(){
+            this.refresh()
+        },
+        refresh() {
+            this.isRefreshing = true;
+            this.page = 1;
+            api.bookComments({bid:this.bid,pageSize: 10,pageIndex: this.page}).then(res=>{
+                this.commentList = []
+                if(res.data.length<10){
+                    this.hasMoreData = false;
+                } else {
+                    this.hasMoreData = true;
+                }
+                for(let i in res.data){
+                    this.commentList.push(res.data[i])
+                }
+                this.isRefreshing = false;
+            });
+        },
+        get(){
+            this.hasMoreData = true;
+            api.bookComments({bid:this.bid,pageSize: 10,pageIndex: this.page}).then(res=>{
+                if(res.data.length<10){
+                    this.hasMoreData = false;
+                }
+                for(let i in res.data){
+                    this.commentList.push(res.data[i])
+                }
+            })
+        },
+        loadMoreData(){
+            if(this.hasMoreData){
+                this.page ++ ;
+                this.get();
+            }
+        }
+    }
+</script>
+<style scoped>
+    
+    progress {
+        color: #f76c5b;
+    }
+    refresh {
+        progress-color: #f76c5b;
+    }
+    .comments{
+        flex-direction: column;
+        background-color: #ffffff;
+    }
+    
+    .load-more{   
+        height: 80px;
+        line-height: 80px;
+        justify-content: center;
+    }
+    .load-more text{
+        font-size: 24px;
+        color: #c5c5c5;
+    }
+</style>

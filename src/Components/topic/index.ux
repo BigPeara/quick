@@ -1,0 +1,135 @@
+<template>
+    <div class="topic">
+        <div class="avatar">
+            <image src="{{data.Avatar}}"></image>
+        </div>
+        <div class="info">
+            <div class="user">
+                <div class="user-info">
+                    <div class="name">
+                        <text>{{data.username}}</text>
+                        <text class="mark">普</text>
+                    </div>
+                    <div class="date">
+                        <text>{{data.postTime}}</text>
+                    </div>
+                </div>
+                <div class="btn-apply" onclick="apply">
+                    <image src="../Common/imgs/comment.png"></image>
+                    <text>回复</text>
+                </div>
+            </div>
+            <div class="content">
+                <text>{{data.contents}}</text>
+            </div>
+        </div>    
+    </div>
+</template>
+<script>
+    import prompt from '@system.prompt'
+    export default{
+        props: ['data'],
+        apply(){
+            prompt.showToast({
+                message: "暂未开通"
+            })
+        }
+    }
+</script>
+<style scoped>
+    .topic{
+        flex: 1;
+        padding: 30px 30px 20px 30px;
+        border-color: #e4e4e4;
+        border-bottom-width: 1px;
+    }
+    .topic .avatar{
+        margin-right: 24px;
+    }
+    .topic .avatar image{
+        width: 84px;
+        height: 84px;
+        border-radius: 42px;
+    }
+    .topic .info{
+        flex: 1;
+        flex-direction: column;
+    }
+    .topic .user{
+        flex: 1;
+    }
+    .topic .user-info{
+        flex: 1;
+        flex-direction: column;
+    }
+    .topic .user-info .name{
+        align-items: center;
+    }
+    .topic .user-info .name text{
+        line-height: 44px;
+        color: #6d92a5;
+        font-size: 28px;
+    }
+    .topic .user-info .name .mark{
+        margin-left: 16px;
+        width: 38px;
+        height: 38px;
+        line-height: 38px;
+        color: #ffffff;
+        background-color: #f76c5b;
+        font-size: 32px;
+        border-radius: 6px;
+        text-align: center;
+    }
+    .topic .user-info .date text{
+        line-height: 44px;
+        font-size: 24px;
+        color: #999999;
+    }
+    .topic .btn-apply{
+        height: 88px;
+        align-items: center;
+    }
+    .topic .btn-apply text{  
+        font-size: 24px;
+        color: #999999;
+    }
+    .topic .btn-apply image{
+        margin-right: 10px;
+        width: 26px;
+        height: 26px;;
+    }
+    .topic .content {
+        margin-top: 10px;
+    }
+    .topic .content text{
+        line-height: 44px;
+        font-size: 28px;
+        color: #3d3d45;
+    }
+    .topic .reply-list{
+        margin-top: 20px;
+        padding-top: 20px;
+        flex-direction: column;
+        border-color: #e4e4e4;
+        border-top-width: 1px;
+    }
+    .topic .reply-list .li{
+        flex-wrap: wrap;
+    }
+    .topic .replayName{
+        line-height: 44px;
+        color: #6D92A5;
+        font-size: 28px;
+    }
+    .topic .replayContent{
+        line-height: 44px;
+        color: #3D3D45;
+        font-size: 28px;
+    }
+    .topic .replayDate{
+        line-height: 44px;
+        font-size: 24px;
+        color: #999999;
+    }
+</style>

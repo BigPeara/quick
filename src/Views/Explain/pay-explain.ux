@@ -1,0 +1,129 @@
+<import name="pannel" src="../Components/pannel/pannel.ux"></import>
+<template>
+    <div class="pay-explain">
+        <text class="pay-explain-title">用户充值说明</text>
+        <text class="pay-explain-hint">尊敬的用户，为保障您的合法权益，请您在充值前仔细阅读本规则，以免造成误解。当您点击“立即充值”按钮后，即视为您已阅读、理解本协议，并同意按本协议的规定参与充值。</text>
+        <div class="pay-explain-detail">
+            <text class="sort-title">1、兑换比例 </text>
+            <text class="sort-detail">1人民币=100落初币</text>
+        </div>
+        <div class="pay-explain-detail">
+            <text class="sort-title">2、赠送比例</text>
+            <div  class="sort-detail">
+                <text >单笔充值50元，送10元，且升级为</text>
+                <text class="vip">VIP</text>
+                <text>用户</text>
+
+            </div>
+            <div class="sort-detail">
+                <text>单笔充值100元，送25元，且升级为</text>
+                <text class="vip">VIP</text>
+                <text>用户</text>
+
+            </div>
+            <div class="sort-detail">
+                <text>单笔充值200元，送60元，且升级为</text>
+                <text class="vip">VIP</text>
+                <text>用户</text>
+
+            </div>
+            <div>
+                <text>单笔充值500元，送200元，且升级为</text><text class="vip">高级VIP</text><text>用户</text>    
+            </div>
+
+
+        </div>
+        <div class="pay-explain-detail">
+            <text class="sort-title">3、赠送条件及相应说明</text>
+            <text class="sort-detail">3.1 充值送只针对首次充值用户。</text>
+            <text class="sort-detail">3.2 充值赠送金额兑换的为阅读币，阅读币可以用来订阅VIP章节（阅读币不能订阅全本特价书籍，也不能用来打赏作者）</text>
+            <text class="sort-detail">3.3 重大节假日，充值活动时满额即送，不单单局限首充用户</text>
+        </div>
+        <div class="pay-explain-detail">
+
+            <text class="sort-title">4、特别说明</text>
+            <div class="dtail-box">
+                <div>
+                    <text>4.1 充值余额有效期：</text>
+                </div>
+                <div>
+                    <text>充值及返现金额有期限为自充值日起至用完即止；</text>
+                </div>
+            </div>
+            <div class="dtail-box">
+                <div>
+                    <text>4.2 余额花费及退款规则：</text>
+                </div>
+                <div>
+                    <text>充值金额为虚拟货币，暂不支持退款，如遇特殊情况请联系客服。</text>
+                </div>
+            </div>
+            <text class="sort-detail">4.3 目前只支持支付宝和微信充值</text>
+        </div>
+        <div class="pay-explain-detail">
+            <text class="sort-title">5、联系客服</div>
+        <text class="sort-detail">充值过程中遇到任何问题均可联系客服，客服请加微信公众号：luochucom</text>
+    </div>
+    </div>
+
+</template>
+<script>
+    export default {
+        data() {}
+    }
+</script>
+<style scoped>
+    /* justify-content: space-between; flex-direction: column;
+    } */
+
+    .pay-explain {
+        width: 100%;
+        /* height: 100%; */
+        flex-direction: column;
+        padding: 30px 30px 90px 30px;
+
+    }
+
+    .pay-explain-title {
+        font-size: 32px;
+        color: #333333;
+        text-align: center;
+        margin-bottom: 35px;
+    }
+
+    .pay-explain-hint {
+        font-size: 28px;
+        color: #7C7C8C;
+        margin-bottom: 40px;
+    }
+
+    .pay-explain-detail {
+        flex-direction: column;
+        margin-bottom: 30px;
+    }
+
+    .sort-title {
+        font-size: 28px;
+        color: #333333;
+        margin-bottom: 40px;
+        font-weight: bold;
+    }
+
+    .sort-detail {
+        color: #7C7C8C;
+        margin-bottom: 40px;
+        font-size: 28px;
+
+    }
+
+    .dtail-box {
+        color: #7C7C8C;
+        margin-bottom: 40px;
+        font-size: 28px;
+        flex-direction: column;
+    }
+
+    .vip {
+        color: #1DB7AC;
+    }
+</style>

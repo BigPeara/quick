@@ -1,0 +1,346 @@
+<import name="loading" src="../Components/loading/index"></import>
+<import name="book-list" src="../Components/BookList/index"></import>
+<import name="book-con" src="../Components/bookInfo/index"></import>
+<import name="normalBook" src="../Components/book/normalBook.ux"></import>
+<template>
+    <div>
+        <loading option="{{option}}"></loading>
+        <list class="home-page" onscrollbottom="loadMoreData">
+            <!-- 顶部图片 -->
+            <list-item type="banner">
+                <swiper class="banner" autoplay="true" interval="4000">
+                    <stack class="banner" for="{{item in swiper}}">
+                        <image class="banner-image" src="{{config.COVER_BASE_URL + item.cover}}" onclick="linkDetail(item.id)"></image>
+                    </stack>
+                </swiper>
+                <div class="search"></div>
+            </list-item>
+            <block>
+                <list-item type="search">
+                    <div class="btn-search" onclick="linkSeach">
+                        <image src="../Common/imgs/search.png" class="icon-search"></image>
+                        <text>搜作品~搜作者~</text>
+                    </div>
+                </list-item>
+            </block>
+            <block>
+                <list-item type="nav">
+                    <div class="flexible-tabbar">
+                        <div class="tab-item" onclick="route">
+                            <image class="icon-nav icon-nav-free" src="../Common/imgs/class.png"></image>
+                            <text class="tab-text">分类</text>
+                        </div>
+                        <div class="tab-item" onclick="linkList(0)">
+                            <image class="icon-nav icon-nav-rank" src="../Common/imgs/rank.png"></image>
+                            <text class="tab-text">排行</text>
+                        </div>
+                        <div class="tab-item" onclick="pay">
+                            <image class="icon-nav icon-nav-monthly" src="../Common/imgs/pay.png"></image>
+                            <text class="tab-text">充值</text>
+                        </div>
+                        <div class="tab-item" onclick="linkList(2)">
+                            <image class="icon-nav icon-nav-manito" src="../Common/imgs/wanben.png"></image>
+                            <text class="tab-text">完本</text>
+                        </div>
+                    </div>
+                </list-item>
+            </block>
+            <list-item type="book">
+                <div class="container">
+                    <div class="book-title">
+                        <div class="flex-t">
+                            <image src="../Common/imgs/hot.png" class="icon-title"></image>
+                            <text class="book-sub-t">热销短篇</text>
+                        </div>
+                        <image src="../Common/imgs/icon-more.png" class="icon-more" onclick="linkSpecialBook"></image>
+                    </div>
+                    <book-list book-list="{{ai}}"></book-list>
+                </div>
+            </list-item>
+            <list-item type="g-hot">
+                <div class="container">
+                    <div class="book-title">
+                        <div class="flex-t">
+                            <image src="../Common/imgs/sexw.png" class="icon-title"></image>
+                            <text class="book-sub-t">女生热门</text>
+                        </div>
+                    </div>
+                    <book-con book-con="{{list}}"></book-con>
+                    <book-list book-list="{{bookNa}}"></book-list>
+                    <text class="btn-more" onclick="linkClassify(2)">更多更新...</text>
+                </div>
+            </list-item>
+            <list-item type="boy-hot">
+                <div class="container">
+                    <div class="book-title">
+                        <div class="flex-t">
+                            <image src="../Common/imgs/sexm.png" class="icon-title"></image>
+                            <text class="book-sub-t">男生热门</text>
+                        </div>
+                    </div>
+                    <book-con book-con="{{boyList}}"></book-con>
+                    <book-list book-list="{{boyNa}}"></book-list>
+                    <text class="btn-more" onclick="linkClassify(1)">更多更新...</text>
+                </div>
+            </list-item>
+            <list-item type="sign">
+                <div class="container">
+                    <div class="book-title">
+                        <div class="flex-t">
+                            <image src="../Common/imgs/jingpin.png" class="icon-title"></image>
+                            <text class="book-sub-t">精品推荐</text>
+                        </div>
+                    </div>
+                    <normalBook for="item in recom" bookinfo="{{item}}"></normalBook>
+                </div>
+            </list-item>
+        </list>
+    </div>
+</template>
+<script>
+    import router from '@system.router';
+    import api from '../api/bookData';
+    import config from '../utils/urlConfig';
+    import prompt from '@system.prompt';
+    import ReadingConfig from "../utils/readingConfig";
+    import Authentication from '../utils/authentication';
+
+    export default {
+        data() {
+            return {
+                swiper: [],
+                ai: [],
+                bookNa: [],
+                list: [],
+                boyNa: [],
+                boyList: [],
+                recom: [],
+                config: {},
+                loginState: false,
+                option: {
+                    show: true,
+                    background: 'rgb(255,255,255)',
+                    text: '拼命加载中...'
+                }
+            }
+        },
+        onInit() {
+            this.config = config;
+            Authentication.getLoginState().then(res => {
+                this.loginState = res;
+            })
+            api.bookIndex({ token: this.token }).then(res => {
+                for (var j = 0; j < res.data.rexiaodp.length; j++) {
+                    this.ai.push(res.data.rexiaodp[j])
+                }
+                for (var k = 0; k < res.data.nvshengrm.length - 1; k++) {
+                    this.bookNa.push(res.data.nvshengrm[k])
+                }
+                for (var m = 0; m < res.data.nanshengrm.length - 1; m++) {
+                    this.boyNa.push(res.data.nanshengrm[m])
+                }
+                this.swiper = res.data.gundong;
+                this.recom = [].concat(res.data.jingpintj.slice(0, 4));
+                this.boyList.push(res.data.nanshengrm[res.data.nanshengrm.length - 1]);
+                this.list.push(res.data.nvshengrm[res.data.nvshengrm.length - 1]);
+                this.option.show = false;
+            })
+        },
+        route() {
+            router.push({
+                uri: 'Views/Classify'
+            })
+        },
+        linkList(state) {
+            router.push({
+                uri: 'Views/BookList',
+                params: {
+                    state: state
+                }
+            })
+        },
+        linkSeach() {
+            router.push({
+                uri: 'Views/Search'
+            })
+        },
+        linkClassify(index) {
+            router.push({
+                uri: 'Views/Classify',
+                params: {
+                    channelid: index
+                }
+            })
+        },
+        linkDetail(id) {
+            router.push({
+                uri: 'Detail',
+                params: {
+                    bid: id
+                }
+            })
+        },
+        linkSpecialBook() {
+            router.push({
+                uri: 'Views/SpecialBookList',
+            })
+        },
+        pay() {
+            if (!this.loginState) {
+                ReadingConfig.setRoute({
+                    uri: router.getState().name
+                }).then(res => {
+                    router.replace({
+                        uri: 'Views/Login'
+                    })
+                })
+            }else{
+                // prompt.showDialog({
+                //     title: '提示',
+                //     message: '该功能正在建设中，您可以到悠空官网享受所有权益！',
+                //     buttons: [
+                //         {
+                //             text: '确定',
+                //             color: '#f76c5b'
+                //         }
+                //     ],
+                //     success: function (data) {
+                //         console.log('handling callback')
+                //     },
+                //     cancel: function () {
+                //         console.log('handling cancel')
+                //     },
+                //     fail: function (data, code) {
+                //         console.log(`handling fail, code = ${code}`)
+                //     }
+                // })
+                router.push({
+                    uri: 'Views/Pay',
+                })
+            }
+        }
+    }
+</script>
+
+<style scoped>
+    /*  */
+
+    .banner {
+        height: 420px;
+    }
+
+    .banner .banner-image {
+        height: 420px;
+        width: 100%;
+    }
+
+    .book-container {
+        height: 150px;
+        width: 100%;
+        display: flex;
+        flex: 1;
+    }
+
+    /* .nav .icon-nav{width: 35.2px;height: 35.2px;} */
+
+    .flexible-tabbar {
+        background-color: #ffffff;
+        padding: 30px 0;
+        display: flex;
+        width: 100%;
+    }
+
+    .flexible-tabbar .tab-item {
+        flex: 1;
+        justify-content: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 25px 0 15px;
+    }
+
+    .flexible-tabbar .tab-item .icon-nav {
+        width: 70.4px;
+        height: 70.4px;
+        margin-bottom: 10px;
+    }
+
+    .flexible-tabbar .tab-text {
+        font-size: 32px;
+    }
+
+    .flexible-tabbar .active {
+        font-size: 32px;
+    }
+
+    .container {
+        padding: 0 30px 24px;
+        width: 100%;
+        margin-top: 30px;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .container .book-title {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 25.6px 0;
+    }
+
+    .container .book-title .flex-t {
+        display: flex;
+        align-items: center;
+    }
+
+    .container .book-title .book-sub-t {
+        font-size: 40px;
+        color: #333333;
+        line-height: 40px;
+        margin-left: 15px;
+    }
+
+    .container .book-title .icon-title {
+        width: 40px;
+        height: 40px;
+    }
+
+    .container .book-title .icon-more {
+        width: 90px;
+        height: 35px;
+    }
+
+    .container .btn-more {
+        width: 100%;
+        height: 74px;
+        border: 1px solid #f76c5b;
+        border-radius: 64px;
+        text-align: center;
+        color: #f76c5b;
+        font-size: 30px;
+        margin-top: 25px;
+    }
+
+    .btn-search {
+        margin: 20px 35px;
+        width: 680px;
+        height: 60px;
+        color: #ffffff;
+        background-color: #ffffff;
+        justify-content: center;
+        align-items: center;
+        border-radius: 30px;
+    }
+
+    .btn-search image {
+        margin-right: 10px;
+        width: 32px;
+        height: 32px;
+    }
+
+    swiper {
+        indicator-selected-color: #f76c5b;
+    }
+</style>

@@ -1,0 +1,594 @@
+<import name="loading" src="../../Components/loading/index"></import>
+<import name="popup" src="../../Components/popup/index"></import>
+<template>
+    <div class="read {{mode}}">
+        <loading option="{{option}}"></loading>
+        <div class="views-read">
+            <div class="read-header" if="readInfo">
+                <div class="bar">
+                    <text class="title">{{readInfo.Title}}</text>
+                </div>
+                <div class="tools">
+                    <image src="../../Common/imgs/index.png" onclick="linkHome"></image>
+                    <!-- <image if="mode=='night'" src="../../Common/imgs/sun.png" onclick="setMode('sun')"></image>
+                    <image if="mode=='sun'" src="../../Common/imgs/Moon.png" onclick="setMode('night')"></image> -->
+                    <text class="icon" onclick="fontSizePlus">A+</text>
+                    <text class="icon" onclick="fontSizeMinus">A-</text>
+                </div>
+            </div>
+            <div class="read-content" if="readInfo.Contents!=''">
+                <div for="{{item in toPs(readInfo.Contents)}}" class="stage">
+                    <text style="font-size:{{fontSize}}px">{{decodeUnicode(item)}}</text>
+                </div>
+            </div>
+            <div class="read-control" if="readInfo.Contents!=''">
+                <div class="btn btn-prev" onclick="returnPage">
+                    <text>{{readInfo.PrevPageString}}</text>>
+                </div>
+                <div class="menu" onclick="showMenu">
+                    <image src="../../Common/imgs/list-ul.png"></image>
+                </div>
+                <div class="btn btn-next" onclick="nextPage">
+                    <text>{{readInfo.NextPageString}}</text>>
+                </div>
+            </div>
+            <div class="read-content" if="readInfo.Contents==''">
+                <div for="{{item in toPs(readInfo.chapterIntro)}}" class="stage">
+                    <text style="font-size:{{fontSize}}px">{{decodeUnicode(item)}}</text>
+                </div>
+            </div>
+            <div class="order" if="readInfo.Contents==''">
+                <div class="read-order" if="!readSpecial.isSpecial">
+                    <div class="title">
+                        <div class="line"></div>
+                        <text class="title-text">本章需购买后阅读</text>
+                        <div class="line"></div>
+                    </div>
+                    <div class="price-detail">
+                        <text class="price">价格:</text>
+                        <text class="num">{{readInfo.chapterMoney}}</text>
+                        <text class="money">悠空币</text>
+                    </div>
+                    <div class="balance-detail">
+                        <text class="balance">余额:</text>
+                        <text class="num">{{userData.vipMoney}}</text>
+                        <text class="money">悠空币 + </text>
+                        <text class="num">{{userData.extcredits2}}</text>
+                        <text class="money">阅读币</text>
+                    </div>
+                    <div class="btn-order" if="loginState&&(userData.vipMoney+userData.extcredits2>=readInfo.chapterMoney)" onclick="subscribeChapter">
+                        <text class="order-text">{{dingouText}}</text>
+                    </div>
+                    <div class="btn-order" if="loginState&&(userData.vipMoney+userData.extcredits2<readInfo.chapterMoney)" onclick="linkPay">
+                        <text class="order-text">余额不足，前往充值</text>
+                    </div>
+                    <div class="btn-order" if="!loginState" onclick="linkLogin">
+                        <text class="order-text">您尚未登录，点此登录</text>
+                    </div>
+                    <div class="hint">
+                        <text class="hint-text"> 感谢您！支持作者，支持正版阅读!</text>
+                    </div>
+                </div>
+                <div class="read-order" if="readSpecial.isSpecial && !readSpecial.hasBuyChapter">
+                    <div class="title">
+                        <div class="line"></div>
+                        <text class="title-text">全本订购超优惠</text>
+                        <div class="line"></div>
+                    </div>
+                    <div class="price-detail origin-price">
+                        <text>全本原价：{{readSpecial.price}}悠空币</text>
+                    </div>
+                    <div class="price-detail">
+                        <text class="price">全本特价:</text>
+                        <text class="num">{{readSpecial.specialPrice}}</text>
+                        <text class="money">悠空币</text>
+                    </div>
+                    <div class="balance-detail">
+                        <text class="balance">余额:</text>
+                        <text class="num">{{userData.vipMoney}}</text>
+                        <text class="money">悠空币 + </text>
+                        <text class="num">{{userData.extcredits2}}</text>
+                        <text class="money">阅读币</text>
+                    </div>
+                    <div class="btn-order" if="loginState&&(userData.vipMoney>=readSpecial.specialPrice)" onclick="subscribeSpecial">
+                        <text class="order-text">{{dingouText}}</text>
+                    </div>
+                    <div class="btn-order" if="loginState&&(userData.vipMoney<readSpecial.specialPrice)" onclick="linkPay">
+                        <text class="order-text">余额不足，前往充值</text>
+                    </div>
+                    <div class="btn-order" if="!loginState" onclick="linkLogin">
+                        <text class="order-text">您尚未登录，点此登录</text>
+                    </div>
+                    <div class="hint">
+                        <text class="hint-text"> 感谢您！支持作者，支持正版阅读!</text>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- <popup option="{{popupData}}" @qui-overlay-click="overlayClick">
+            <div class="bottom-control">
+                <text class="mask-title">快应用</text>
+                <text class="mask-txt">快应用是一套以前端开发技术栈为主进行应用开发的框架，采用流行的前端开发模式，贴合主流前端开发者的思维习惯，同时大幅提升应用的性能，提供大量前端环境无法使用的系统能力，以及很多第三方服务的对接能力。</text>
+            </div>
+        </popup> -->
+    </div>
+</template>
+<script>
+    import api from '../../api/bookData';
+    import ReadingConfig from "../../utils/readingConfig";
+    import Authentication from '../../utils/authentication';
+    import bookService from '../../api/bookcaseService';
+    import prompt from '@system.prompt';
+    import router from '@system.router';
+    export default {
+        data: {
+            readInfo: {},
+            mode: "sun",
+            fontSize: 32,
+            cid: '529931',
+            bid: '2908',
+            showMenuVisible: false,
+            userData: {
+                vipMoney: 0,
+                Extcredits2: 0
+            },
+            loginState: false,
+            dingouText: '订购',
+            readSpecial: {},
+            option: {
+                show: true,
+                background: 'rgb(255,255,255)',
+                text: '拼命加载中...'
+            },
+            popupData: {
+                show: true,
+                position: 'bottom'
+            },
+        },
+        onInit() {
+            Promise.all([Authentication.getUserData(), Authentication.getLoginState(), this.get(), this.init()]).then(res => {
+                if (res[0]) {
+                    this.userData = JSON.parse(res[0]).data;
+                    this.user = JSON.parse(res[0]);
+                }
+                this.loginState = res[1];
+                bookService.addLocalBookpage({ bid: this.bid, cid: this.cid });
+                if (res[1]) {
+                    this.addReadRecords();
+                }
+                this.option.show = false;
+            })
+        },
+        subscribeChapter() {
+            if (this.dingouText == '订购中...') {
+                return;
+            }
+            this.dingouText = '订购中...';
+            api.subscribeChapter({ cids: this.cid, bid: this.bid }).then(res => {
+                let payMoney = this.readInfo.chapterMoney;
+                let vipMoney = this.userData.vipMoney;
+                let extcredits2 = this.userData.extcredits2;
+                if (vipMoney >= payMoney) {
+                    vipMoney = vipMoney - payMoney
+                } else if (extcredits2 >= payMoney) {
+                    extcredits2 = extcredits2 - payMoney;
+                }
+                this.user.data.vipMoney = vipMoney;
+                this.user.data.extcredits2 = extcredits2;
+                Authentication.setUserData(this.user).then(res => {
+                    this.get()
+                })
+            })
+        },
+        // 全本订购
+        subscribeSpecial() {
+            if (this.dingouText == '订购中...') {
+                return;
+            }
+            this.dingouText = '订购中...';
+            api.subscribeSpecial({ bid: this.bid }).then(res => {
+                let payMoney = this.readInfo.chapterMoney;
+                let vipMoney = this.userData.vipMoney;
+                let extcredits2 = this.userData.extcredits2;
+                if (vipMoney >= payMoney) {
+                    vipMoney = vipMoney - payMoney
+                } else if (extcredits2 >= payMoney) {
+                    extcredits2 = extcredits2 - payMoney;
+                }
+                this.user.data.vipMoney = vipMoney;
+                this.user.data.extcredits2 = extcredits2;
+                Authentication.setUserData(this.user).then(res => {
+                    this.get()
+                })
+            })
+        },
+        linkPay() {
+            prompt.showDialog({
+                title: '提示',
+                message: '该功能正在建设中，您可以到悠空官网享受所有权益！',
+                buttons: [
+                    {
+                        text: '确定',
+                        color: '#f76c5b'
+                    }
+                ],
+                success: function (data) {
+                    console.log('handling callback')
+                },
+                cancel: function () {
+                    console.log('handling cancel')
+                },
+                fail: function (data, code) {
+                    console.log(`handling fail, code = ${code}`)
+                }
+            })
+            // router.push({
+            //     uri: 'Views/Pay',
+            // })
+        },
+        addReadRecords() {
+            api.addReadRecords({ cid: this.cid, bid: this.bid })
+        },
+        init() {
+            ReadingConfig.get().then(res => {
+                let data = JSON.parse(res) || {};
+                this.fontSize = data.fontsize || 32;
+                this.mode = data.mode || '';
+            })
+        },
+        fontSizePlus() {
+            ReadingConfig.changeFontSize(2).then(res => {
+                this.fontSize = res || 32
+            });
+        },
+        fontSizeMinus() {
+            ReadingConfig.changeFontSize(-2).then(res => {
+                this.fontSize = res || 32
+            });
+        },
+        get() {
+            api.bookRead({ bid: this.bid, cid: this.cid }).then(res => {
+                this.readInfo = res.data.chapter[0];
+                this.readSpecial = res.data.special;
+            })
+        },
+        toPs(text) {
+            text = String(text);
+            return text.split("\r\n");
+        },
+        decodeUnicode(str) {
+            str = str.replace(/\\/g, "%");
+            return unescape(str);
+        },
+        setMode(str) {
+            this.mode = str;
+        },
+        linkHome() {
+            router.replace({
+                uri: 'Index'
+            });
+        },
+        linkLogin() {
+            ReadingConfig.setRoute({
+                uri: router.getState().name,
+                params: {
+                    bid: this.bid,
+                    cid: this.cid
+                }
+            }).then(res => {
+                router.replace({
+                    uri: 'Views/Login'
+                })
+            })
+        },
+        returnPage() {
+            if (this.readInfo.PrevPageString == '首页') {
+                router.replace({
+                    uri: 'Detail',
+                    params: {
+                        bid: this.bid
+                    }
+                });
+                return;
+            }
+            router.replace({
+                uri: 'Views/Read',
+                params: {
+                    bid: this.bid,
+                    cid: this.readInfo.PrevID
+                }
+            });
+        },
+        nextPage() {
+            if (this.readInfo.NextPageString == '末页') {
+                router.replace({
+                    uri: 'Detail',
+                    params: {
+                        bid: this.bid
+                    }
+                });
+                return;
+            }
+            router.replace({
+                uri: 'Views/Read',
+                params: {
+                    bid: this.bid,
+                    cid: this.readInfo.NextID
+                }
+            });
+        },
+        addBookCase() { //添加书架
+            api.addBookCase({ bid: this.bid }).then(res => {
+                this.isBookCase = true;
+                let obj = {
+                    bid: this.bid,
+                    isBookCase: true
+                }
+                bookService.addLocalBookCase(obj).then(res1 => {
+                    prompt.showToast({
+                        message: "收藏成功"
+                    })
+                })
+            })
+        },
+        showMenu() {
+            let that = this;
+            prompt.showContextMenu({
+                itemList: [
+                    '加入书架',
+                    '查看目录',
+                    '书籍详情',
+                    '阅读历史',
+                    '返回首页',
+                    '取消'
+                ],
+                itemColor: '#333333',
+                success: function (data) {
+                    switch (data.index) {
+                        case 0:
+                            that.addBookCase()
+                            break;
+                        case 1:
+                            router.push({
+                                uri: 'Views/Catalog',
+                                params: {
+                                    bid: that.bid
+                                }
+                            });
+                            break;
+                        case 2:
+                            router.push({
+                                uri: 'Detail',
+                                params: {
+                                    bid: that.bid
+                                }
+                            });
+                            break;
+                        case 3:
+                            if (!that.loginState) {
+                                ReadingConfig.setRoute({
+                                    uri: router.getState().name,
+                                    params: {
+                                        bid: that.bid,
+                                        cid: that.cid
+                                    }
+                                }).then(res => {
+                                    router.replace({
+                                        uri: 'Views/Login'
+                                    })
+                                })
+                            } else {
+                                router.push({
+                                    uri: 'Views/ReadCord'
+                                })
+                            }
+                            break;
+                        case 4:
+                            router.push({
+                                uri: 'Index'
+                            });
+                            break;
+                        case 5:
+                            prompt.showToast({
+                                message: '取消'
+                            });
+                    }
+                },
+                cancel: function (data) {
+                    console.log('handling cancel')
+                },
+                fail: function (data, code) {
+                    console.log(`handling fail, code = ${code}`)
+                }
+            })
+        }
+    }
+</script>
+<style scoped>
+    .views-load {
+        width: 750px;
+        height: 80px;
+        line-height: 80px;
+        justify-content: center;
+    }
+
+    progress {
+        color: #f76c5b;
+    }
+
+    .read {
+        flex-direction: column;
+    }
+
+    .views-read {
+        flex-direction: column;
+        padding: 16px 32px;
+    }
+
+    .sun {
+        background-image: url(../../Common/imgs/readBg-sun.png);
+        background-size: 750px 142px;
+    }
+
+    .night {
+        background-image: url(../../Common/imgs/readBg-night.png);
+        background-size: 750px 142px;
+    }
+
+    .night text {
+        color: #ffffff;
+    }
+
+    .views-read .read-header {
+        flex-direction: column;
+    }
+
+    .views-read .bar {
+        align-items: center;
+        height: 80px;
+        /* border-color: #dcdcdc;
+        border-bottom-width: 1px; */
+    }
+
+    .views-read .tools {
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .views-read .tools image {
+        padding: 10px;
+        width: 52px;
+        height: 52px;
+    }
+
+    .views-read .tools text {
+        padding: 10px;
+        font-size: 35px;
+    }
+
+    .views-read .title {
+        lines: 1;
+        text-overflow: ellipsis;
+        font-size: 38px;
+        font-weight: bold;
+        color: #b77373;
+    }
+
+    .views-read .read-content .stage {
+        margin-top: 32px;
+    }
+
+    .views-read .read-content text {
+        line-height: 58px;
+        font-size: 32px;
+    }
+
+    .views-read .read-control {
+        margin-top: 32px;
+        margin-bottom: 32px;
+        align-items: center;
+    }
+
+    .views-read .read-control .btn {
+        width: 210px;
+        height: 64px;
+        background-color: #ffffff;
+        border-radius: 32px;
+        border-color: #dbd9db;
+        border-width: 1px;
+    }
+
+    .views-read .read-control .menu image {
+        width: 64px;
+        height: 64px;
+    }
+
+    .views-read .read-control div {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .read-order {
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+        padding: 30px;
+    }
+
+    .read-order .title {
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .read-order .line {
+        width: 28%;
+        border-top-width: 2px;
+        border-color: #333333;
+        margin-top: 20px
+    }
+
+    .read-order .title-text {
+        font-size: 30px;
+        color: #333333;
+    }
+
+    .read-order .price-detail,
+    .read-order .balance-detail {
+        margin-top: 40px;
+
+
+    }
+
+    .read-order .price,
+    .read-order .balance,
+    .read-order .money {
+        font-size: 24px;
+        color: #333333;
+
+    }
+
+    .origin-price text {
+        color: #999999;
+        font-size: 24px;
+        text-decoration: line-through;
+    }
+
+    .read-order .num {
+        color: #f76c5b;
+        font-size: 24px;
+        margin: 0 5px
+    }
+
+    .read-order .btn-order {
+        width: 100%;
+        height: 90px;
+        justify-content: center;
+        align-items: center;
+        background-color: #f76c5b;
+        border-radius: 10px;
+        margin-top: 40px;
+    }
+
+    .read-order .order-text {
+        font-size: 30px;
+        color: #ffffff;
+    }
+
+    .read-order .hint {
+        margin-top: 40px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .read-order .hint-text {
+        font-size: 24px;
+        color: #999999;
+    }
+    .bottom-control{
+        background-color: rgba(0, 0, 0, 0.9)
+    }
+    .bottom-control text{
+        color: #ffffff;
+    }
+</style>

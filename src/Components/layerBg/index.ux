@@ -1,0 +1,117 @@
+<template>
+    <div class="layer-bg">
+        <div class="{{className}}" style="background-color: {{option.background}}" show="{{visible}}" @click="layerBgClick">
+            <div @click="interceptor">
+                <slot></slot>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    /**
+     * option = {
+     *   show: true/false,   //是否显示
+     *   background: 'rgba(0,0,0,.4)',   //遮罩层背景色
+     *   autoClose: true/false  //点击遮罩层是否自动关闭
+     * }
+     */
+    export default {
+        props: [
+            'option'
+        ],
+        data() {
+            return {
+                visible: false,
+                className: '',
+                defaultOption: {
+                    show: false,
+                    background: 'rgba(0,0,0,0.4)',
+                    autoClose: true
+                }
+            }
+        },
+        onInit() {
+            Object.keys(this.defaultOption).forEach(key => {
+                let methodName = key.replace(/^\w/, function ($0) {
+                    return `update${$0.toUpperCase()}`
+                })
+
+                this.$watch(`option.${key}`, methodName)
+                this[methodName]()
+            })
+        },
+        updateBackground() {
+            !this.option.hasOwnProperty('background') && this.$set('option.background', this.defaultOption.background)
+        },
+        updateAutoClose() {
+            !this.option.hasOwnProperty('autoClose') && this.$set('option.autoClose', this.defaultOption.autoClose)
+        },
+        updateShow() {
+            if (!this.option.hasOwnProperty('show')) {
+                this.$set('option.show', this.defaultOption.show)
+            } else {
+                clearTimeout(this.timeoutId)  //防止option.show更改太快
+
+                if (this.option.show) {
+                    this.visible = true
+                    this.className = 'layer-bg-enter'
+                } else {
+                    this.className = 'layer-bg-leave'
+                    this.timeoutId = setTimeout(() => {
+                        this.visible = false
+                    }, 500)
+                }
+            }
+        },
+        layerBgClick() {
+            this.option.autoClose && (this.option.show = false)
+            this.$emit('蒙层点击')
+        },
+        interceptor() {  //拦截click事件
+        }
+    }
+</script>
+<style>
+    @keyframes layerBgenter {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes layerBgleave {
+        0% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+        }
+    }
+
+    .layer-bg-enter {
+        animation-name: layerBgenter;
+    }
+
+    .layer-bg-leave {
+        animation-name: layerBgleave;
+    }
+
+    .layer-bg>div {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        justify-content: center;
+        align-items: center;
+        animation-duration: 500ms;
+        animation-fill-mode: forwards;
+    }
+
+    .layer-bg>div>div {
+        flex-direction: column;
+        align-items: center;
+    }
+</style>

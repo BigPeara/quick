@@ -1,0 +1,291 @@
+<import name="loading" src="../../Components/loading/index"></import>
+<import name="normalBook" src="../../Components/book/normalBook.ux"></import>
+<template>
+    <div class="classify">
+        <loading option="{{option}}"></loading>
+        <div class="classify-container">
+            <div class="classify-item">
+                <text class="classify-title">频道:</text>
+                <list class="list">
+                    <list-item class="list-item" type="classify">
+                        <div class="classify-bar" for="(index,item) in Sex" onclick="changBtn(index)">
+                            <text class="{{ currentIndex== index ? 'acitve':'classify-text'}}">{{item}}</text>
+                        </div>
+                    </list-item>
+                </list>
+            </div>
+            <div class="classify-item">
+                <text class="classify-title">分类:</text>
+                <list class="list">
+                    <list-item class="list-item" type="classList">
+                        <text class="{{curallIndex===-1 ? 'acitve':'classify-text'}}" onclick="change(-1)">全部</text>
+                        <div class="classify-bar" for="(index,all) in ClassList" onclick="change(index,all)">
+                            <text class="{{curallIndex=== index ? 'acitve':'classify-text'}}">{{all.title}}</text>
+                        </div>
+                    </list-item>
+                </list>
+            </div>
+            <div class="classify-item" if="{{isClick}}">
+                <text class="classify-title">小类:</text>
+                <list class="list">
+                    <list-item class="list-item" type="subList">
+                        <text class="{{subdivide==-1 ? 'acitve':'classify-text'}}" onclick="subChnage(-1)">全部</text>
+                        <div class="classify-bar" for="(index,sub) in subList" onclick="subChnage(index,sub)">
+                            <text class="{{subdivide== index ? 'acitve':'classify-text'}}">{{sub.title}}</text>
+                        </div>
+                    </list-item>
+                </list>
+            </div>
+            <div class="classify-item">
+                <text class="classify-title">排序:</text>
+                <list class="list">
+                    <list-item class="list-item" type="list">
+                        <div class="classify-bar" for="(index,list) in List" onclick="changList(index)">
+                            <text class="{{curListIndex=== index ? 'acitve':'classify-text'}}">{{list}}</text>
+                        </div>
+                    </list-item>
+                </list>
+            </div>
+            <div class="classify-item">
+                <text class="classify-title">状态:</text>
+                <list class="list">
+                    <list-item class="list-item" type="state">
+                        <div class="classify-bar" for="(index,iten) in state" onclick="changIten(index)">
+                            <text class="{{ curItenIndex=== index ? 'acitve':'classify-text'}}">{{iten}}</text>
+                        </div>
+                    </list-item>
+                </list>
+            </div>
+        </div>
+        <list class="book-list" onscrollbottom="loadMoreData" scrollpage="true">
+            <block for="item in bookList">
+                <list-item type="product" class="content-item">
+                    <normalBook bookinfo="{{item}}"></normalBook>
+                </list-item>
+            </block>
+            <!-- 加载更多，type属性自定义命名为loadMore -->
+            <list-item type="loadMore" class="load-more">
+                <progress type="circular" show="{{hasMoreData}}"></progress>
+                <text show="{{hasMoreData}}">加载更多</text>
+                <text show="{{!hasMoreData}}">我是有底线的</text>
+            </list-item>
+        </list>
+    </div>
+</template>
+<script>
+    import router from '@system.router';
+    import api from '../../api/bookData';
+
+    export default {
+        data() {
+            return {
+                Sex: ["全部", "男生", "女生"],
+                state: ["全部", "连载中", "已完结"],
+                List: ["全部", "人气榜", "畅销榜", "推荐榜", "收藏榜", "打赏榜"],
+                ClassList: [],
+                classListData: [],
+                femaleClassList: [],
+                maleClassList: [],
+                currentIndex: 0,
+                curListIndex: 0,
+                curItenIndex: 0,
+                curallIndex: -1,
+                subdivide: -1,
+                hasMoreData: true, //是否有更多数据
+                subList: [],
+                filter: {
+                    pageSize: 10,
+                    pageIndex: 1,
+                    type: 0,
+                    order: 0,
+                    state: 0,
+                    vip: 0,
+                    channelid: 0,
+                    uid: 0
+                },
+                bookList: [],
+                channelid: null,
+                isClick: false,
+                option: {
+                    show: true,
+                    background: 'rgb(255,255,255)',
+                    text: '拼命加载中...'
+                }
+            }
+        },
+        onInit() {
+            this.filter.channelid = this.channelid || 0;
+            this.currentIndex = this.channelid || 0;
+            Promise.all([this.getBookClass(),this.getBookFilter()]).then(res=>{
+                this.option.show = false;
+            })
+        },
+        getBookClass() {
+            return new Promise((resolve) => {
+                api.BookClassInit({token: this.token}).then(res => {
+                    this.classListData = res.data;
+                    this.ClassList = res.data.femaleClassList.concat(res.data.maleClassList);
+                    resolve("ok")
+                })
+            })
+        },
+        getBookFilter() {
+            return new Promise((resolve) => {
+                api.bookFilter({ pageSize: this.filter.pageSize, pageIndex: this.filter.pageIndex, type: this.filter.type, state: this.filter.state, channelid: this.filter.channelid, order: this.filter.order }).then(res => {
+                    this.bookList = res.data;
+                    resolve("ok")
+                })
+            })
+        },
+        load() {
+            api.bookFilter({ pageSize: this.filter.pageSize, pageIndex: this.filter.pageIndex, type: this.filter.type, state: this.filter.state, channelid: this.filter.channelid, order: this.filter.order }).then(res => {
+                let result = res.data;
+                if (result.length < 10) {
+                    this.hasMoreData = false;
+                }
+                for (let i in result) {
+                    this.bookList.push(result[i])
+                }
+                // debugger
+            })
+        },
+        loadMoreData() {
+            this.filter.pageIndex++;
+            this.load();
+        },
+        changBtn(index) { //切换频道
+            if(this.currentIndex == index){
+                return;
+            }else if (index == 0) {
+                this.curallIndex = -1
+                this.ClassList = this.classListData.maleClassList.concat(this.classListData.femaleClassList);
+            } else if (index == 1) {
+                this.ClassList = [].concat(this.classListData.maleClassList);
+            } else if (index == 2) {
+                this.ClassList = [].concat(this.classListData.femaleClassList);
+            }
+            this.filter.pageIndex = 1;
+            this.bookList = [];
+            this.currentIndex = index;
+            this.filter.channelid = index;
+            this.load();
+        },
+        changList(index) {
+            if(this.curListIndex == index){
+                return;
+            }
+            this.filter.pageIndex = 1;
+            this.bookList = [];
+            this.curListIndex = index;
+            this.filter.order = index;
+            this.load();
+        },
+        changIten(index) {
+            if(this.curItenIndex == index){
+                return;
+            }
+            this.filter.pageIndex = 1;
+            this.bookList = [];
+            this.curItenIndex = index;
+            this.filter.state = index;
+            this.load();
+        },
+        change(index,all) {
+            if(this.curallIndex == index){
+                return;
+            }
+            this.isClick = all.id || false;
+            this.filter.pageIndex = 1;
+            this.subdivide = -1;
+            this.bookList = [];
+            this.subList = all.children || [];
+            this.curallIndex = index;
+            this.filter.type = all.id || 0;
+            this.load()
+        },
+        subChnage(index, sub) {
+            if(this.subdivide == index){
+                return;
+            }
+            this.subdivide = index;
+            this.filter.type = sub.id;
+            this.bookList = [];
+            this.load();
+            if (this.subdivide == -1) {
+                this.filter.type = 0;
+                this.load();
+            }
+        }
+    }
+</script>
+
+<style>
+    progress {
+        color: #f76c5b;
+    }
+
+    .classify {
+        display: flex;
+        flex-direction: column;
+        background-color: #ffffff;
+    }
+
+    .classify-container {
+        display: flex;
+        flex-direction: column;
+        padding: 15px 0 0 30px;
+    }
+
+    .classify-item {
+        display: flex;
+        height: 100px;
+        border-color: #e8e8e8;
+        border-bottom-width: 1px;
+        align-items: center;
+    }
+
+    .classify-item .classify-title {
+        width: 100px;
+    }
+
+    .classify-item .list {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .classify-item .list-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .classify-item .classify-text {
+        height: 50px;
+        padding: 0 12.8px;
+        border-radius: 10px;
+        background-color: #ffffff;
+        color: #7c7c8c;
+    }
+
+    .classify-item .acitve {
+        height: 50px;
+        background-color: #f76c5b;
+        color: #ffffff;
+        padding: 0 12.8px;
+        border-radius: 10px;
+    }
+
+    .book-list {
+        padding: 0 30px;
+    }
+
+    .load-more {
+        height: 80px;
+        line-height: 80px;
+        justify-content: center;
+    }
+
+    .load-more text {
+        font-size: 24px;
+        color: #c5c5c5;
+    }
+</style>

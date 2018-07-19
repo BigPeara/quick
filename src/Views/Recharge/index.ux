@@ -1,0 +1,190 @@
+<template>
+    <div class="recharge">
+        <div class="balance-box">
+            <text class="balance">账户余额：</text>
+            <text class="money">{{userData.vipMoney}} </text>
+            <text> 悠空币 +</text>
+            <text class="money">{{userData.extcredits2}}</text>
+            <text> 阅读币</text>
+        </div>
+        <refresh @refresh="refresh" refreshing="{{isRefreshing}}">
+        <list class="pay-detail" onscrollbottom="loadMoreData">
+            <!-- 商品列表 -->
+            <block for="item in payList">
+                <list-item type="product" class="pay-detail-item">
+                    <div class="pay-content">
+                        <div class="ways-box">
+                            <text class="recharge-way">{{item.pType}} </text>
+                            <text class="recharge-num">订单号：{{item.orderNumber}}</text>
+
+                        </div>
+                        <div>
+                            <text class="{{item.isSuccess?'green':'red' }}">¥{{item.payAmount}}</text>
+                        </div>
+                    </div>
+                    <div class="recharge-result-box">
+                        <text class="recharge-time">{{item.addtime}} </text>
+                        <text class="recharge-result">{{item.isSuccess?'交易成功':'交易失败'}} </text>
+                    </div>
+
+                </list-item>
+            </block>
+            <!-- 加载更多，type属性自定义命名为loadMore -->
+            <list-item type="loadMore" class="load-more">
+                <progress type="circular" show="{{hasMoreData}}"></progress>
+                <text show="{{hasMoreData}}">加载更多</text>
+                <text show="{{!hasMoreData && !isRefreshing}}">我是有底线的</text>
+            </list-item>
+        </list>
+    </div>
+</template>
+<script>
+    import api from '../../api/personData';
+    import prompt from '@system.prompt';
+    import Authentication from '../../utils/authentication';
+    export default {
+        data: {
+            payList: [],
+            hasMoreData: false,
+            isRefreshing: true,
+            userData: {},
+            page: 1
+        },
+        onInit() {
+            this.refresh(); //获取充值记录
+            Authentication.getUserData().then(res => {
+                this.userData = JSON.parse(res).data
+            })
+        },
+        refresh() {
+            this.isRefreshing = true;
+            this.page = 1;
+            api.logPay({ pageIndex: 1, pageSize: 10 }).then(res => {
+                this.payList = [];
+                if (res.data.length < 10) {
+                    this.hasMoreData = false;
+                }else {
+                    this.hasMoreData = true;
+                }
+                for (let i in res.data) {
+                    this.payList.push(res.data[i])
+                }
+                this.isRefreshing = false;
+            });
+        },
+        getPay() {
+            this.hasMoreData = true;
+            api.logPay({ pageIndex: 1, pageSize: 10 }).then(res => {
+                if (res.data.length < 10) {
+                    this.hasMoreData = false;
+                }
+                for (let i in res.data) {
+                    this.payList.push(res.data[i])
+                }
+            })
+        },
+        // 获取更多纪录
+        loadMoreData() {
+            if (this.hasMoreData) {
+                this.page++;
+                this.getPay();
+            }
+        },
+    }
+</script>
+<style scoped>
+    progress {
+        color: #f76c5b;
+    }
+
+    refresh {
+        progress-color: #f76c5b;
+    }
+    .recharge {
+        width: 100%;
+        height: 100%;
+        background-color: #ececec;
+        flex-direction: column;
+    }
+
+    .balance-box {
+        height: 80px;
+        padding: 0 30px;
+
+    }
+
+    .balance-box .balance {
+        font-size: 26px;
+        line-height: 80px;
+        color: #666666;
+    }
+
+    .balance-box .money {
+        color: #F4534B;
+    }
+
+    .pay-content {
+        justify-content: space-between;
+
+    }
+
+    .recharge-result-box {
+        justify-content: space-between;
+        margin-top: 28px;
+    }
+
+    .pay-detail {
+        padding: 0 30px;
+        flex-direction: column;
+        background-color: #ffffff;
+    }
+
+    .pay-detail-item {
+        padding: 30px 0;
+        flex-direction: column;
+        border-bottom-width: 1px;
+        border-color: #e5e5e5;
+    }
+
+    .ways-box {
+        flex-direction: column;
+    }
+
+    .pay-detail-item .recharge-way {
+        font-size: 30px;
+        color: #333333;
+    }
+
+    .pay-detail-item .recharge-num {
+        font-size: 22px;
+        color: #666666;
+        margin-top: 10px;
+    }
+
+    .pay-detail-item .red {
+        color: #F25449;
+        font-size: 32px;
+    }
+
+    .pay-detail-item .green {
+        color: #5ccc76;
+        font-size: 32px;
+    }
+
+    .recharge-time,
+    .recharge-result {
+        font-size: 24px;
+        color: #999999;
+    }
+
+    .load-more {
+        height: 80px;
+        line-height: 80px;
+        justify-content: center;
+    }
+
+    .load-more text {
+        font-size: 24px;
+        color: #c5c5c5;
+    }
+</style>

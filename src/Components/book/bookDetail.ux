@@ -1,0 +1,139 @@
+<template>
+    <div class="detail-book">
+        <div class="book-info">    
+            <div class="cover">
+                <image src="{{config.COVER_BASE_URL+data.cover}}"></image>
+            </div>
+            <div class="book-info-content">
+                <div class="title">
+                    <text>{{data.booktitle}}</text> 
+                </div>
+                <div class="author">
+                    <text>{{data.author}}</text>
+                    <text>著</text>
+                </div>
+                <div class="base">
+                    <text>{{data.tclass}}</text>
+                    <div class="devide"></div>
+                    <text>{{conver(data.bookLength)}}万字</text>
+                </div>
+                <!-- <a class="active">全本特价，8元购全本</a> -->
+            </div>
+        </div>
+        <div class="book-data">
+            <div class="readnum">
+                <image src="../Common/imgs/fire.png"></image>
+                <text class="red" if="{{data.data}}">{{conver(data.data.hits)}}</text>
+                <text>{{data.data.hits<10000 ? '人气':'万人气'}}</text>
+            </div>
+            <div class="recommend">
+                <image src="../Common/imgs/zan.png"></image>
+                <text class="red" if="{{data.data}}">{{data.data.tickets}}</text>
+                <text>推荐</text>
+            </div>
+            <div class="collection">
+                <image src="../Common/imgs/star.png"></image>
+                <text class="red" if="{{data.data}}">{{data.data.saveNumber}}</text>
+                <text>收藏</text>
+            </div>
+        </div>
+    </div>
+</template>>
+<script>
+    import config from '../../utils/urlConfig';
+
+    export default{
+        props: ['data'],
+        data:{
+            config: {}
+        },
+        onInit(){
+            this.config = config
+        },
+        conver(len){
+            if(len<10000){
+                return len
+            }else{
+                return (len/10000).toFixed(2)
+            }
+        }
+    }
+</script>
+<style scoped>
+    .detail-book{
+        flex-direction: column
+    }
+    .detail-book .cover image{
+        width: 154px;
+        height: 214px;
+    }
+    .detail-book .book-info-content{
+        margin-left: 25px;
+        flex-direction: column;
+    }
+    .detail-book .title text{
+        line-height: 36px;
+        font-size: 32px;
+        font-weight: bold;
+        color: #333333;
+    }
+    .detail-book .author {
+        margin-top: 22px;
+    }
+    .detail-book .author text{
+        line-height: 36px;
+        font-size: 26px;
+        color: #3d3d45;
+    }
+    .detail-book .base {
+        align-items: center;
+        margin-top: 17px;
+    }
+    .detail-book .devide{
+        margin: 0 20px;
+        width: 1px;
+        height: 28px;
+        background-color: #7c7c8c;
+    }
+    .detail-book .base text{
+        line-height: 36px;
+        color: #7c7c8c;
+        font-size: 26px;
+    }
+    .detail-book .active{
+        margin-top: 13px;
+        line-height: 36px;
+        color: #1db7ac;
+        font-size: 26px;
+    }
+
+    /* 数据 */
+    .book-data {
+        margin-top: 29px;
+    }
+    .book-data image{
+        margin-top: 2px;
+        margin-right: 12px;
+        width: 32px;
+        height: 32px;
+    }
+    .book-data text{
+        font-size: 26px;
+        line-height: 36px;
+        color: #7c7c8c;
+    }
+    .book-data .readnum{
+        flex: 1;
+    }
+    .book-data .recommend{
+        flex: 1;
+        justify-content: center;
+    }
+    .book-data .collection{
+        flex: 1;
+        justify-content: flex-end;
+    }
+    .book-data .red{
+        color: #f31313;
+    }
+</style>

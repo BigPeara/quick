@@ -1,0 +1,94 @@
+<template>
+    <div class="special-book" onclick="route">
+        <div class="cover">
+            <image src="{{config.COVER_BASE_URL + bookinfo.cover}}"></image>
+        </div>
+        <div class="book-info">
+            <text class="title">
+                {{bookinfo.booktitle}}
+            </text>
+            <text class="book-intro">{{bookinfo.intro}}</text>
+            <text class="origin-price">{{bookinfo.price}}悠空币</text>
+            <div class="special">
+                <text>现价：</text>
+                <text class="special-price">{{bookinfo.specialPrice}}</text>
+                <text>悠空币</text>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    import router from '@system.router';
+    import config from '../../utils/urlConfig';
+    export default {
+        props: ['bookinfo'],
+        data: {
+            config: {}
+        },
+        onInit() {
+            this.config = config
+        },
+        route(item) {
+            router.push({
+                uri: 'Detail',
+                params: {
+                    bid: this.bookinfo.bid
+                }
+            })
+        }
+    }
+</script>
+<style>
+    .special-book {
+        padding: 29px 30px;
+        border-color: #f1f1f1;
+        border-bottom-width: 1px;
+    }
+
+    .special-book .cover {
+        width: 154px;
+    }
+
+    .special-book .cover image {
+        width: 154px;
+        height: 214px;
+    }
+
+    .special-book .book-info {
+        margin-left: 25px;
+        flex-direction: column;
+    }
+
+    .special-book .book-info .title {
+        line-height: 36px;
+        font-size: 32px;
+        color: #333333;
+    }
+
+    .special-book .book-info .book-intro {
+        margin-top: 15px;
+        color: #666666;
+        font-size: 22px;
+        line-height: 38px;
+        lines: 2;
+        text-overflow: ellipsis;
+    }
+
+    .special-book .origin-price{
+        font-size: 20px;
+        color: #cccccc;
+        text-decoration: line-through;
+    }
+    .special-book .special {
+        align-items: flex-end;
+    }
+    .special-book .special text{
+        color: #f25449;
+        font-size: 22px;
+        line-height: 32px;
+    }
+    .special-book .special .special-price{
+        font-size: 38px;
+        line-height: 38px;
+    }
+</style>

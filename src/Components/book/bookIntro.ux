@@ -1,0 +1,126 @@
+<import name="catalog" src="../../Components/book/catalog.ux"></import>
+<template>
+    <div class="book-intro">
+        <div class="title">
+            <div class="title-text">
+                <text>作品简介</text>
+            </div>
+            <div class="title-show" onclick="handleShowData">
+                <image src="../Common/imgs/down.png" show="{{!isComplete}}"></image>
+                <image src="../Common/imgs/up.png" show="{{isComplete}}"></image>
+            </div>
+        </div>
+        <div class="intro" onclick="handleShowData">
+            <text>
+                {{showData}}
+            </text>
+        </div>
+        <div class="title">
+            <div class="title-text">
+                <text>作品目录</text>
+            </div>
+            <div class="title-sort" onclick="sortShowCatalogs">
+                <image src="../Common/imgs/sortUp.png" show="{{isUP}}"></image>
+                <image src="../Common/imgs/sortDown.png" show="{{!isUP}}"></image>
+            </div>
+        </div>
+        <div class="catalog">
+            <catalog for="item in converCatalogs(catalogs)" bid="{{bid}}" data="{{item}}"></catalog>
+        </div>
+        <div class="book-more">
+            <a href="/Views/Catalog?bid={{bid}}">查看更多章节>></a>
+        </div>
+    </div>
+</template>
+<script>
+    import api from '../../api/bookData'
+    export default{
+        props: ['intro','bid','catalogs'],
+        data: {
+            showData: '',
+            isComplete: false,
+            isUP: true,
+            showCatalogs: []
+        },
+        onInit(){
+            this.showData = this.initIntro(this.intro);
+        },
+        converCatalogs(arr){
+            let catalogsCopy = [].concat(arr)
+            return catalogsCopy.splice(0,3);
+        },
+        initIntro(str){
+            if(str.length>36){
+                return str.substring(0,52)+ '...';
+            }
+            return str
+        },
+        handleShowData(){
+            if(this.isComplete){
+                this.showData = this.initIntro(this.intro)
+            }else{
+                this.showData = this.intro;
+            }
+            this.isComplete = !this.isComplete
+        },
+        sortShowCatalogs(){
+            this.catalogs.reverse();
+            this.isUP = !this.isUP;
+        }
+    }
+</script>
+<style scoped>
+    .book-intro{
+        flex-direction: column;
+        flex: 1;
+        padding: 15px 30px 30px 30px;
+        margin-top: 20px;
+        background-color: #ffffff;
+    }
+    .book-intro .title{
+        margin-top: 15px;
+        align-items: center;
+    }
+    .book-intro .title div{
+        flex: 1;
+    }
+    .book-intro .title .title-show{
+        justify-content: flex-end;
+    }
+    .book-intro .title .title-show image{
+        width: 28px;
+        height: 16px;
+    }
+    .book-intro .title .title-sort{
+        justify-content: flex-end;
+    }
+    .book-intro .title .title-sort image{
+        width: 32px;
+        height: 32px;
+    }
+    .book-intro .title text{
+        line-height: 44px;
+        color: #0e0e0e;
+        font-size: 32px;
+    }
+    .book-intro .intro{
+        margin-top: 17px;
+    }
+    .book-detail .book-intro .intro text{
+        line-height: 44px;
+        font-size: 28px;
+        color: #3d3d45;
+    }
+    .book-intro .catalog{
+        margin: 10px 0;
+        flex-direction: column;
+    }
+    .book-detail .book-more{
+        justify-content: center;
+    }
+    .book-detail .book-more a{
+        line-height: 44px;
+        color: #f76c5b;
+        font-size: 30px;
+    }
+</style>

@@ -1,0 +1,67 @@
+<template>
+    <div class="book-classify-li">     
+        <div class="title">
+            <text>{{data.title}}：</text>
+        </div>
+        <div class="all">
+            <text class="{{'' == activeStatus?'active':''}}" onclick="selectAll()">全部</text>
+        </div>
+        <div class="classifies">
+            <list>
+                <list-item for="item in data.lists" type="product" class="content-item" onclick="select(item)">
+                    <text class="{{item.name == activeStatus?'active':''}}">{{item.name}}</text>
+                </list-item>
+            </list>
+        </div>
+    </div>
+</template>
+<script>
+    export default{
+        props: ['data'],
+        data(){
+            return{
+                activeStatus: ''
+            }
+        },
+        select(item){
+            this.activeStatus = item.name;
+            this.$dispatch('selectId',{id: item.id});
+        },
+        selectAll(){
+            this.activeStatus = ''
+            this.$dispatch('selectId',{id: 0});
+        },
+        onInit () {
+            // this.$emit('evtType3', { params: '额外参数' })
+        }
+    }
+</script>
+<style scopedf>
+    list{
+        flex-direction: row;
+    }
+    .book-classify-li {
+        padding: 24px 0 20px 0; 
+        color: #7c7c8c;
+        font-size: 28px;
+    }
+    .book-classify-li .all text{
+        width: 88px;
+        height: 46px;
+        line-height: 46px;
+        text-align: center;
+    }
+    .book-classify-li .classifies text{
+        padding: 0 17px;
+        height: 46px;
+        line-height: 46px;
+    }
+    .book-classify-li .classifies{
+        width: 510px;
+    }
+    .book-classify-li .active{
+        color: #ffffff;
+        background-color: #1DB7AC;
+        border-radius: 8px;
+    }
+</style>

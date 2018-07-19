@@ -1,0 +1,68 @@
+<template>
+    <div class="book-catalog" onclick="linkRead">
+        <div class="content  {{type}}">
+            <div class="title">
+                <text>{{data.Title}}</text>
+            </div>
+            <div class="date">
+                <image src="../../Common/imgs/lock.png" show="{{lock}}"></image>
+                <text>{{data.lastUpdate}}</text>
+            </div>
+        </div>
+        <div class="line" if="{{type}}"></div>
+    </div>
+</template>
+<script>
+    import router from '@system.router'
+    export default{
+        props: ['data','type','bid','lock'],
+        linkRead(){
+            router.push({
+                uri: 'Views/Read',
+                params: {
+                    bid: this.bid,
+                    cid: this.data.id
+                }
+            });
+        }
+    }
+</script>
+<style>
+    .book-catalog{
+        flex-direction: column;
+    }
+    .book-catalog .content{
+        height: 52px;
+        align-items: center;
+    }
+    .book-catalog .special{
+        height: 100px;
+    }
+    .book-catalog .title text{
+        lines: 1;
+        font-size: 30px;
+        color: #333333;
+        text-overflow: ellipsis;
+    }
+    .book-catalog .title{
+        flex: 1;
+    }
+    .book-catalog .date{
+
+        justify-content: flex-end;
+    }
+    .book-catalog .date image{
+        margin-right: 20px;
+        width: 28px;
+        height: 30px;
+    }
+    .book-catalog .date text{
+        font-size: 26px;
+        color: #999999;
+    }
+    .book-catalog .line{
+        width: 690px;
+        height: 1px;
+        background-color: #d8d8d8;
+    }
+</style>

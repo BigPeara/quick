@@ -1,0 +1,246 @@
+<import name="loading" src="../Components/loading/index.ux"></import>
+<import name="bookDetail" src="../Components/book/bookDetail.ux"></import>
+<import name="btn" src="../Components/button/btn.ux"></import>
+<import name="catalog" src="../Components/book/catalog.ux"></import>
+<import name="topic" src="../Components/topic/index.ux"></import>
+<import name="recommendBook" src="../Components/book/recommendBook.ux"></import>
+<import name="book-list" src="../Components/BookList/index.ux"></import>
+<import name="bookIntro" src="../Components/book/bookIntro.ux"></import>
+<template>
+    <div class="book-detail">
+        <loading option="{{option}}"></loading>
+        <div class="book-info">
+            <bookDetail if="{{bookInfo}}" data="{{bookInfo.book}}"></bookDetail>
+            <div class="edit">
+                <btn type="default" text="收藏本书" width="330px" onclick="addBookCase" if="{{!isBookCase}}"></btn>
+                <btn type="disabled" text="移除本书" width="330px" onclick="removeBookCase" if="{{isBookCase}}"></btn>
+                <btn type="primary" text="{{startTitle}}" width="330px" onclick="startBook"></btn>
+            </div>
+        </div>
+        <div class="book-colligate" if="bookInfo&&bookInfo.book">
+            <bookIntro intro="{{bookInfo.book.Introduction}}" catalogs="{{catalogs}}" bid="{{bid}}"></bookIntro>
+        </div>
+        <div class="book-topic" if="bookInfo && bookInfo.topic.length>0">
+            <topic for="{{item in bookInfo.topic}}" data="{{item}}"></topic>
+            <div class="book-topic-more">
+                <btn type="default" text="更多评论" onclick="linkComments" width="690px"></btn>
+            </div>
+        </div>
+        <div class="book-recommend">
+            <div class="titlebar">
+                <text class="title">相关推荐</text>
+            </div>
+            <div if="bookInfo" class="recommendBook">
+                <book-list book-list="{{stochastic(bookInfo.samebook)}}"></book-list>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    import prompt from '@system.prompt';
+    import router from '@system.router';
+    import api from '../api/bookData';
+    import bookService from '../api/bookcaseService';
+    import Authentication from '../utils/authentication';
+    import ReadingConfig from "../utils/readingConfig";
+
+    export default {
+        data: {
+            bid: '',
+            isBookCase: false,
+            cid: '',
+            title: '',
+            catalogs: [],
+            bookInfo: null,
+            option: {
+                show: true,
+                background: 'rgb(255,255,255)',
+                text: '拼命加载中...'
+            },
+            isStrike: true,
+            startTitle: '开始阅读',
+            loginState: false,
+        },
+        onInit() {
+            this.isStrike = false
+            Promise.all([Authentication.getLoginState(), this.getBookInfo(), this.getBookIntro(), this.getBookState()]).then(res => {
+                this.loginState = res[0]
+                this.isStrike = true
+                this.option.show = false;
+                this.getBookPage();
+            })
+        },
+        onShow() {
+            if (this.isStrike) {
+                this.getBookPage();
+            }
+        },
+        getBookPage() {
+            bookService.getLocalBookpage().then(res1 => {
+                for (let i in res1) {
+                    if (res1[i].bid == this.bid) {
+                        this.cid = res1[i].cid;
+                        this.startTitle = "继续阅读"
+                    }
+                }
+            })
+        },
+        addBookCase() { //添加书架
+            if (!this.loginState) {
+                ReadingConfig.setRoute({
+                    uri: router.getState().name,
+                    params: {
+                        bid: this.bid,
+                    }
+                }).then(res => {
+                    router.replace({
+                        uri: 'Views/Login'
+                    })
+                })
+            } else {
+                api.addBookCase({ bid: this.bid }).then(res => {
+                    this.isBookCase = true;
+                    let obj = {
+                        bid: this.bid,
+                        isBookCase: true
+                    }
+                    bookService.addLocalBookCase(obj).then(res1 => {
+                        prompt.showToast({
+                            message: "收藏成功"
+                        })
+                    })
+                })
+            }
+        },
+        removeBookCase() { //移除成功
+            api.deleteBookCase({ bids: this.bid }).then(res => {
+                this.isBookCase = false;
+                bookService.removeLocalBookCase(this.bid).then(res1 => {
+                    prompt.showToast({
+                        message: "移除成功"
+                    })
+                })
+            })
+        },
+        getBookInfo() {
+            let that = this
+            return new Promise((resolve) => {
+                api.bookInfo({ bid: this.bid }).then(res => {
+                    that.bookInfo = res.data;
+                    that.cid = res.data.book.firstChapterId
+                    that.$page.setTitleBar({ text: res.data.book.booktitle });
+                    resolve('ok')
+                })
+            })
+
+        },
+        getBookIntro() {
+            return new Promise((resolve, reject) => {
+                api.bookChapter({ bid: this.bid }).then(res => {
+                    let data = res.data;
+                    let source = [];
+                    for (var i = 0, len = data.length; i < len; i++) {
+                        for (var j = 0, slen = data[i].chapters.length; j < slen; j++) {
+                            source.push(data[i].chapters[j]);
+                        }
+                    };
+                    this.catalogs = source;
+                    resolve("ok")
+                })
+            })
+
+        },
+        getBookState() {
+            bookService.isExistInBookCase(this.bid).then(res => {
+                this.isBookCase = res;
+            })
+        },
+        linkComments() {
+            router.push({
+                uri: 'Views/Comments',
+                params: {
+                    bid: this.bid
+                }
+            })
+        },
+        stochastic(arr) {
+            let randowArr = this.randomThree();
+            let showArr = []
+            for (let i in randowArr) {
+                let index = randowArr[i]
+                showArr.push(arr[index])
+            }
+            return showArr
+        },
+        randomThree() {
+            let nums = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+            let arr = [];
+            while (arr.length < 3) {
+                let num = Math.floor(Math.random() * (9 - arr.length));
+                arr.push(nums[num]);
+                nums.splice(num, 1);
+            }
+            return arr
+        },
+        startBook() {
+            router.push({
+                uri: 'Views/Read',
+                params: {
+                    bid: this.bid,
+                    cid: this.cid
+                }
+            });
+        }
+    }
+</script>
+<style scoped>
+    .book-detail {
+        flex-direction: column;
+    }
+
+    .book-detail .book-info {
+        padding: 30px 30px 40px 30px;
+        width: 750px;
+        background-color: #ffffff;
+        flex-direction: column;
+    }
+
+    .book-detail .book-info .edit {
+        margin-top: 40px;
+        justify-content: space-between;
+    }
+
+    .book-detail .book-topic {
+        margin-top: 20px;
+        flex-direction: column;
+        background-color: #ffffff;
+    }
+
+    .book-detail .book-topic-more {
+        justify-content: center;
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+
+    .book-detail .book-recommend {
+        padding: 0 30px 25px 30px;
+        margin-top: 20px;
+        flex-direction: column;
+        background-color: #ffffff;
+    }
+
+    .book-detail .book-recommend .titlebar {
+        margin-bottom: 24px;
+    }
+
+    .book-detail .book-recommend .recommendBook {
+        flex: 1;
+    }
+
+    .book-detail .book-recommend .titlebar .title {
+        margin-top: 10px;
+        line-height: 44px;
+        font-size: 32px;
+        color: #0e0e0e;
+    }
+</style>

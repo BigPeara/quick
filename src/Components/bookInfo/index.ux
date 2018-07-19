@@ -1,0 +1,83 @@
+<template>
+    <div class="book-container">
+        <div class="book-Con">
+            <div for="iten in bookCon" class="book-item" onclick="route(iten)">
+                <image src="{{config.COVER_BASE_URL + iten.cover}}" class="book-cover"></image>
+                <div class="book-info">
+                    <text class="book-name">{{iten.booktitle}}</text>
+                    <text class="book-introd">{{iten.Introduction}}</text>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    import router from '@system.router';
+    import config from '../../utils/urlConfig';
+    export default {
+        props: ["bookCon"],
+        data: {
+            config: {}
+        },
+        onInit() {
+            this.config = config
+        },
+        route(item) {
+            router.push({
+                uri: 'Detail',
+                params: {
+                    bid: item.id
+                }
+            })
+        }
+    }
+</script>
+
+<style scoped>
+    .book-container {
+        margin-bottom: 40px;
+    }
+
+    .book-container .book-Con {
+        width: 100%;
+        display: flex;
+    }
+
+    .book-container .book-Con .book-item {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .book-container .book-Con .book-cover {
+        height: 258px;
+        display: flex;
+        width: 190px;
+        border-radius: 10px;
+    }
+
+    .book-container .book-Con .book-info {
+        flex: 1;
+        height: 258px;
+        display: flex;
+        flex-direction: column;
+        margin-left: 20px;
+    }
+
+    .book-container .book-Con .book-name {
+        font-size: 32px;
+        line-height: 32px;
+        color: #000000;
+        lines: 1;
+        text-overflow: ellipsis;
+    }
+
+    .book-container .book-Con .book-introd {
+        line-height: 48px;
+        font-size: 26px;
+        margin-top: 25px;
+        lines: 3;
+        text-overflow: ellipsis;
+    }
+</style>

@@ -1,0 +1,127 @@
+<template>
+    <div class="cord-book" onclick="linkDetail">
+        <div class="cover">
+            <image src="http://res.yokong.com{{data.cover}}"></image>
+        </div>
+        <div class="book-info">
+            <div class="title">
+                <text>{{data.booktitle}}</text>
+            </div>
+            <div class="readStatus">
+                <text class="readStatus-text">读至：{{converTitle(data.chapterTitle)}}</text>
+                <text class="readStatus-date">{{data.markTime.substring(5,16)}}</text>
+            </div>
+            <div class="readStatus">
+                <text class="readStatus-text">更新：{{converTitle(data.lastUpdateTitle)}}</text>
+                <text class="readStatus-date">{{data.lastUpdate.substring(5,16)}}</text>
+            </div>
+            <div class="other">
+                <text class="author">{{data.author}}</text>
+                <text class="tag" onclick="linkRead">{{data.chapterTitle=='尚未阅读'?'立即阅读':'继续阅读'}}</text>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    import router from '@system.router';
+    import prompt from '@system.prompt'
+    export default {
+        props: ['data'],
+        converTitle(str) {  //截取字符
+            if (str.length > 8) {
+                return str.substring(0, 8) + '...';
+            }
+            return str
+        },
+        linkDetail(){
+            router.push({
+                uri: 'Detail',
+                params: {
+                    bid: this.data.id
+                }
+            })
+        },
+        linkRead(evt){
+            router.push({
+                uri: 'Views/Read',
+                params: {
+                    bid: this.data.id,
+                    cid: this.data.cid
+                }
+            })
+        }
+    }
+</script>
+<style scoped>
+    .cord-book {
+        flex: 1;
+        padding: 29px 30px;
+        border-bottom-width: 1px;
+        border-color: #e9e9e9;
+    }
+
+    .cord-book .cover {
+        width: 154px;
+    }
+
+    .cord-book .cover image {
+        width: 154px;
+        height: 214px;
+    }
+
+    .cord-book .book-info {
+        margin-left: 25px;
+        flex: 1;
+        flex-direction: column;
+    }
+
+    .cord-book .book-info .title {
+        
+    }
+    .cord-book .book-info .title text{
+        line-height: 36px;
+        font-size: 32px;
+        font-weight: bold;
+        color: #333333;
+    }
+    .cord-book .book-info .book-intro {
+        margin-top: 20px;
+        color: #666666;
+        font-size: 28px;
+        line-height: 44px;
+        height: 88px;
+    }
+
+    .cord-book .book-info .other {
+        margin-top: 30px;
+    }
+
+    .cord-book .book-info .author {
+        flex: 1;
+        line-height: 36px;
+        color: #7c7c8c;
+        font-size: 24px;
+    }
+
+    .cord-book .book-info .tag {
+        padding: 0 12px;
+        color: #ffffff;
+        background-color: #f76c5b;
+        font-size: 22px;
+        height: 36px;
+        line-height: 36px;
+        border-radius: 18px;
+    }
+    .cord-book .readStatus{
+        margin-top: 16px;
+    }
+    .cord-book .readStatus-text{
+        flex: 1;
+        font-size: 28px;
+        color: #7c7c8c;
+    }
+    .cord-book .readStatus-date{
+        font-size: 24px;
+        color: #c4c4ca;
+    }
+</style>

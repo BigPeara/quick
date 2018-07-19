@@ -1,0 +1,362 @@
+<import name="cordBook" src="../../Components/book/cordBook.ux"></import>
+<template>
+    <div class="read-record">
+        <div class="order-info div-tabbar">
+            <div class="chapter-order" onclick="showContent(1)">
+                <text class="first {{type == 1 ? 'active' : ''}}">章节订阅</text>
+                <div class="select-line" style="background-color: {{type == 1?'#f76c5b':'#ffffff'}}"></div>
+            </div>
+            <div class="all-order" onclick="showContent(2)">
+                <text class="{{type == 2 ? 'active' : ''}}">全本订阅</text>
+                <div class="select-line" style="background-color: {{type == 2?'#f76c5b':'#ffffff'}}"> </div>
+            </div>
+        </div>
+        <div class="div-tabcontent">
+            <div class="recharge">
+                <refresh @refresh="refresh" refreshing="{{isRefreshing}}">
+                    <list onscrollbottom="loadMoreData" class="cordBook-list">
+                        <!-- 列表 -->
+                        <block for="item in specialSub">
+                            <list-item type="subscript" class="cordBook-li" if="type == 1">
+                                <div class="order-detail">
+                                    <div class="order-book-detail">
+                                        <text class="order-book-name">《{{item.bookTitle}}》</text>
+                                        <div class="order-pay">
+                                            <text class="money">{{item.chapterMoney}}</text>
+                                            <text>悠空币</text>
+                                        </div>
+                                    </div>
+                                    <!--章节和订购时间-->
+                                    <div class="order-chapter-detail">
+                                        <text class="order-chapter">{{item.chapterTitle}}</text>
+                                        <text class="order-time">{{item.addTime}}</text>
+                                    </div>
+                                </div>
+                            </list-item>
+                            <list-item type="special" class="cordBook-li" if="type == 2">
+                                <div class="all-order-detail">
+                                    <div class="all-order-book">
+                                        <text class="all-order-book-name">《{{item.bookTitle}}》</text>
+                                    </div>
+                                    <div class="all-order-info">
+                                        <div class="order-pay">
+                                            <text class="money">{{item.chapterMoney}}</text>
+                                            <text>悠空币</text>
+                                        </div>
+                                        <text class="order-time">{{item.addTime}}</text>
+                                    </div>
+                                </div>
+                            </list-item>
+                        </block>
+                        <!-- 加载更多，type属性自定义命名为loadMore -->
+                        <list-item type="loadMore" class="load-more">
+                            <progress type="circular" show="{{hasMoreData}}"></progress>
+                            <text show="{{hasMoreData}}">加载更多</text>
+                            <text show="{{!hasMoreData && !isRefreshing}}">我是有底线的</text>
+                        </list-item>
+                    </list>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    import api from '../../api/personData';
+    export default {
+        data: {
+            specialSub: [],
+            hasMoreData: false,
+            isRefreshing: true,
+            page: 1,
+            type: 1,
+            gType: 0
+        },
+        onInit() {
+            this.refresh(); //获取阅读记录
+            this.$page.setTitleBar({ text: "章节订阅" });
+        },
+        showContent(num) {
+            if (this.type == num) {
+                return;
+            }
+            this.type = num;
+            this.specialSub = [];
+            if (num == 1) {
+                this.subscriptionRecordRefresh();
+                this.$page.setTitleBar({ text: "章节订阅" });
+            } else {
+                this.specialSubRecordRefresh();
+                this.$page.setTitleBar({ text: "全本订阅" });
+            }
+        },
+        refresh() {
+            if (this.type == 1) {
+                this.subscriptionRecordRefresh();
+            } else {
+                this.specialSubRecordRefresh();
+            }
+        },
+        subscriptionRecordRefresh() {
+            this.isRefreshing = true;
+            this.hasMoreData = false;
+            this.page = 1;
+            api.subscriptionRecord({ pageSize: 10, pageIndex: this.page, type: 2 }).then(res => {
+                this.specialSub = [];
+                if (res.data.length < 10) {
+                    this.hasMoreData = false;
+                } else {
+                    this.hasMoreData = true;
+                }
+                for (let i in res.data) {
+                    this.specialSub.push(res.data[i])
+                }
+                this.isRefreshing = false;
+            })
+        },
+        specialSubRecordRefresh() {
+            this.isRefreshing = true;
+            this.hasMoreData = false;
+            this.page = 1;
+            api.specialSubRecord({ pageSize: 10, pageIndex: this.page, type: 2 }).then(res => {
+                this.specialSub = [];
+                if (res.data.length < 10) {
+                    this.hasMoreData = false;
+                } else {
+                    this.hasMoreData = true;
+                }
+                for (let i in res.data) {
+                    this.specialSub.push(res.data[i])
+                }
+                this.isRefreshing = false;
+            })
+        },
+        getMoreSpecialSubRecordR() {
+            this.isRefreshing = true;
+            this.hasMoreData = false;
+            api.specialSubRecord({ pageSize: 10, pageIndex: this.page, type: 2 }).then(res => {
+                if (res.data.length < 10) {
+                    this.hasMoreData = false;
+                } else {
+                    this.hasMoreData = true;
+                }
+                for (let i in res.data) {
+                    this.specialSub.push(res.data[i])
+                }
+                this.isRefreshing = false;
+            })
+        },
+        getMoreSubscriptionRecord() {
+            this.isRefreshing = true;
+            this.hasMoreData = false;
+            api.subscriptionRecord({ pageSize: 10, pageIndex: this.page, type: 2 }).then(res => {
+                if (res.data.length < 10) {
+                    this.hasMoreData = false;
+                } else {
+                    this.hasMoreData = true;
+                }
+                for (let i in res.data) {
+                    this.specialSub.push(res.data[i])
+                }
+                this.isRefreshing = false;
+            })
+        },
+        // 获取更多纪录
+        loadMoreData() {
+            if (this.hasMoreData) {
+                this.page++;
+                if (this.type == 1) {
+                    this.getMoreSubscriptionRecord();
+                } else {
+                    this.getMoreSpecialSubRecordR();
+                }
+            }
+        },
+    }
+</script>
+<style scoped>
+    .read-record {
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        background-color: #ececec;
+    }
+
+    /*  */
+
+    .order-info {
+        height: 90px;
+        background-color: #ffffff;
+        border-bottom-width: 1px;
+        border-color: #e5e5e5;
+
+    }
+
+    .order-info text {
+        width: 100%;
+        text-align: center;
+    }
+
+    .all-order {
+        flex-direction: column;
+        font-size: 30px;
+        color: #999999;
+        width: 49.5%;
+        height: 90px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chapter-order {
+        flex-direction: column;
+        font-size: 30px;
+        color: #999999;
+        width: 49.5%;
+        height: 90px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chapter-order .first {
+
+        border-right-width: 2px;
+        border-color: #e6e6e6;
+    }
+
+    .order-info .active {
+        color: #f76c5b;
+    }
+
+    .select-line {
+        width: 32px;
+        height: 2px;
+        margin-top: 4px;
+    }
+
+    .cordBook-list {
+        padding: 0 30px;
+        flex: 1;
+        background-color: #ffffff;
+    }
+
+    .cordBook-li {
+        flex: 1;
+    }
+
+    .order-detail {
+        width: 100%;
+        padding: 27px 0;
+        flex-direction: column;
+        border-bottom-width: 1px;
+        border-color: #e5e5e5;
+
+    }
+
+    .order-book-detail {
+        flex: 1;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .order-book-name {
+        flex: 1;
+        margin-right: 20px;
+        margin-left: -10px;
+        font-size: 30px;
+        color: #333333;
+        lines: 1;
+        text-overflow: ellipsis;
+    }
+
+    .order-pay {
+        width: 240px;
+        text-align: right;
+        justify-content: flex-end;
+        font-size: 22px;
+        color: #999999;
+    }
+    .money {
+        margin-right: 12px;
+    }
+
+    .order-chapter-detail {
+        flex: 1;
+        justify-content: space-between;
+        margin-top: 15px
+    }
+
+    .order-chapter {
+        margin-right: 20px;
+        flex: 1;
+        font-size: 24px;
+        color: #666666;
+        lines: 1;
+        text-overflow: ellipsis;
+    }
+
+    .order-chapter-detail .order-time {
+        width: 240px;
+        text-align: right;
+        justify-content: flex-end;
+        font-size: 22px;
+        color: #999999;
+    }
+
+    .all-order-detail {
+        flex: 1;
+        padding: 27px 0;
+        background-color: #ffffff;
+        justify-content: space-between;
+        border-bottom-width: 1px;
+        border-color: #e5e5e5;
+    }
+    .all-order-book{
+        margin-right: 20px;
+        flex: 1;
+    }
+    .all-order-book-name {
+        margin-left: -10px;
+        lines:1;
+        text-overflow: ellipsis;
+        font-size: 30px;
+        color: #333333;
+    }
+
+    .all-order-info {
+        width: 240px;
+        justify-content: flex-end;
+        text-align: right;
+        flex-direction: column;
+    }
+
+    .all-order-detail .order-time {
+        margin-top: 15px;
+        width: 240px;
+        lines:1;
+        text-overflow: ellipsis;
+        font-size: 22px;
+        color: #999999;
+        text-align: right;
+    }
+    .order-pay .money {
+        font-size: 30px;
+        color: #F4534B;
+    }
+
+    progress {
+        color: #f76c5b;
+    }
+
+    refresh {
+        progress-color: #f76c5b;
+    }
+
+    .load-more {
+        height: 80px;
+        line-height: 80px;
+        justify-content: center;
+    }
+
+    .load-more text {
+        font-size: 24px;
+        color: #c5c5c5;
+    }
+</style>

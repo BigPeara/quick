@@ -1,0 +1,39 @@
+<template>
+    <div class="btn btn-{{type}}" style="width:{{width}}">
+        <text>{{text}}</text>
+    </div>
+</template>
+<script>
+    export default{
+        props: ['type','text','width']
+    }
+</script>
+<style scoped>
+    .btn{
+        height: 74px;
+        justify-content: center;
+        align-items: center;
+        border-radius: 37px;
+    }
+    .btn-default{
+        border: 1px solid #f76c5b;
+    }
+    .btn-default text{ 
+        color: #f76c5b;
+    }
+    .btn-primary{
+        color: #ffffff;
+        background-color: #f76c5b;
+    }
+    .btn-primary text{ 
+        color: #ffffff;
+    }
+    .btn-disabled{
+        border-width: 1px;
+        border-color: #c9c9c9;
+        background-color: #ffffff;
+    }
+    .btn-disabled text{ 
+        color: #c9c9c9;
+    }
+</style>

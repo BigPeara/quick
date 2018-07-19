@@ -1,0 +1,214 @@
+<import name="loading" src="../../Components/loading/index"></import>
+<import name="catalog" src="../../Components/book/catalog.ux"></import>
+<template>
+    <div class="views-catalog">
+        <loading option="{{option}}"></loading>
+        <div class="total" onclick="sortShowCatalogs">
+            <text class="text">{{len}}</text>
+            <div class="sort" show="{{isUP}}">
+                <image src="../../Common/imgs/sortUp.png"></image>
+                <text>正序排列</text>
+            </div>
+            <div class="sort" show="{{!isUP}}">
+                <image src="../../Common/imgs/sortDown.png"></image>
+                <text>倒序排列</text>
+            </div>
+        </div>
+        <list class="tutorial-page" scrollpage="false" onscrollbottom="loadMoreData">
+            <!-- 细粒度划分list-item -->
+            <block for="item in catalogs">
+                <list-item type="productLeft" if="{{item.isVip==false}}">
+                    <div class="book-catalog" onclick="linkRead(item.id)">
+                        <div class="content">
+                            <text class="title">{{item.Title}}</text>
+                            <text class="date">{{item.lastUpdate}}</text>
+                        </div>
+                    </div>
+                </list-item>
+                <list-item type="productRight" if="{{item.isVip==true}}">
+                    <div class="book-catalog" onclick="linkRead(item.id)">
+                        <div class="content">
+                            <text class="title">{{item.Title}}</text>
+                            <image src="../../Common/imgs/lock.png"></image>
+                            <text class="date">{{item.lastUpdate}}</text>
+                        </div>
+                    </div>
+                </list-item>
+            </block>
+            <block>
+                <!-- 加载更多，type属性自定义命名为loadMore -->
+                <list-item type="loadMore" class="load-more">
+                    <progress type="circular" show="{{hasMoreData}}"></progress>
+                    <text show="{{hasMoreData}}">加载更多</text>
+                    <text show="{{!hasMoreData && !isRefreshing}}">我是有底线的</text>
+                </list-item>
+            </block>
+        </list>
+    </div>
+</template>
+<script>
+    import api from '../../api/bookData';
+    import prompt from '@system.prompt';
+    import router from '@system.router';
+    export default {
+        data: {
+            bid: '',
+            source: [],
+            catalogs: [],
+            isUP: true,
+            hasMoreData: true,
+            len: '',
+            page: 0,
+            option: {
+                show: true,
+                background: 'rgb(255,255,255)',
+                text: '拼命加载中...'
+            }
+        },
+        onInit() {
+            this.get().then(res => {
+                let source = [].concat(this.source);
+                this.catalogs = this.catalogs.concat(source.splice(this.page*40,40));
+                if( this.catalogs.length>=this.source.length){
+                    this.hasMoreData = false;
+                }
+                this.option.show = false;
+            })
+        },
+        get() {
+            return new Promise((resolve, reject) => {
+                api.bookChapter({ bid: this.bid }).then(res => {
+                    let data = res.data;
+                    let source = [];
+                    for (var i = 0, len = data.length; i < len; i++) {
+                        for (var j = 0, slen = data[i].chapters.length; j < slen; j++) {
+                            source.push(data[i].chapters[j]);
+                        }
+                    }
+                    this.len = '共' + source.length + '章';
+                    this.source = source;
+                    resolve('ok')
+                })
+            })
+        },
+        sortShowCatalogs() {
+            let source = [].concat(this.source.reverse())
+            this.page = 0;
+            this.catalogs = [].concat(source.splice(this.page*40,40));
+            this.isUP = !this.isUP;
+        },
+        linkRead(id) {
+            router.push({
+                uri: 'Views/Read',
+                params: {
+                    bid: this.bid,
+                    cid: id
+                }
+            });
+        },
+        loadMoreData(){
+            if (this.hasMoreData) {
+                this.page++;
+                let source = [].concat(this.source);
+                this.catalogs = this.catalogs.concat(source.splice(this.page*40,40));
+                if( this.catalogs.length>=this.source.length){
+                    this.hasMoreData = false;
+                }
+            }
+        }
+    }
+</script>
+<style>
+    progress {
+        color: #f76c5b;
+    }
+    .load-more {
+        height: 80px;
+        line-height: 80px;
+        justify-content: center;
+    }
+
+    .load-more text {
+        font-size: 24px;
+        color: #c5c5c5;
+    }
+    .views-catalog {
+        flex-direction: column;
+    }
+
+    .tutorial-page {
+        padding: 0 30px;
+        background-color: #ffffff;
+    }
+
+    .views-catalog .total {
+        padding: 0 30px;
+        height: 100px;
+        border-bottom-width: 20px;
+        border-color: #ececec;
+        background-color: #ffffff;
+    }
+
+    .views-catalog .total .text {
+        flex: 1;
+        font-size: 32px;
+        color: #171717;
+    }
+
+    .views-catalog .sort {
+        align-items: center;
+    }
+
+    .views-catalog .sort image {
+        margin-right: 6px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .views-catalog .sort text {
+        font-size: 28px;
+    }
+
+
+    .book-catalog {
+        flex: 1;
+        flex-direction: column;
+        border-bottom-width: 1px;
+        border-color: #d8d8d8;
+    }
+
+    .book-catalog .content {
+        flex: 1;
+        height: 100px;
+        align-items: center;
+    }
+
+    .book-catalog .title {
+        flex: 1;
+        font-size: 30px;
+        color: #333333;
+        lines: 1;
+        text-overflow: ellipsis;
+    }
+
+    .book-catalog .date {
+        justify-content: flex-end;
+    }
+
+    .book-catalog image {
+        margin-right: 20px;
+        width: 28px;
+        height: 30px;
+    }
+
+    .book-catalog .date text {
+        font-size: 26px;
+        color: #999999;
+    }
+
+    .book-catalog .line {
+        width: 690px;
+        height: 1px;
+        background-color: #d8d8d8;
+    }
+</style>

@@ -1,0 +1,75 @@
+<template>
+
+    <web id="web" src="{{webSrc}}" @pagestart="test"></web>
+</template>
+<script>
+    import webview from '@system.webview';
+    import prompt from '@system.prompt';
+    import alipay from '@service.alipay'
+    import Authentication from '../../utils/authentication';
+    import wxpay from '@service.wxpay'
+    export default {
+        data: {
+            webSrc: '',
+            test: ''
+        },
+        onInit() {
+            Authentication.goPay().then(res => {
+                this.webSrc = res;
+                // wxpay.pay({
+                //     //微信网页支付的prepayId
+                //     prepayid: 'your order prepayid,eg: wx20170101abcdef1234567890',
+                //     extra: {
+                //         //传递给支付页面的自定义参数, 根据需要进行设置, 会被urlEncode之后拼接在配置的url尾部
+                //         mweb_url: 'https://wx.tenpay.com/cgi-bin/mmpayweb-bin',
+                //         customeKey1: 'customeValue1',
+                //         customeKey2: 'customeValue2'
+                //     },
+                //     fail: function (data, code) {
+                //         console.log(`WX H5 PAY handling fail, code = ${code}`)
+                //     },
+                //     cancel: function () {
+                //         console.log('WX H5 PAY handling cancel')
+                //     },
+                //     success: function (data) {
+                //         //H5方式下，支付成功的回调仅仅只是指将订单递交给微信，并不意味着支付已经成功完成
+                //         console.log('WX H5 PAY handling success')
+                //     }
+                // })
+            })
+        },
+        test(obj) {
+            let that = this
+            prompt.showDialog({
+                message: obj.url
+            })
+            let order_no = this.getParams(obj.url, 'mch_order_no');
+            return;
+            if (order_no) {
+                alipay.pay({
+                    orderInfo: order_no,
+                    callback: function (ret) {
+                        that.test = ret;
+                    }
+                })
+            }
+
+        },
+        getParams(url, str) {
+            let params = url.split('?')[1] || '';
+            if (params == '') {
+                return;
+            }
+            let value = params.split('&').find((item) => {
+                if (item.split('=')[0] == str) {
+                    return item;
+                }
+            })
+            if (value == '' || value == undefined) {
+                return '';
+            } else {
+                return value.split('=')[1];
+            }
+        }
+    }
+</script>

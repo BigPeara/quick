@@ -1,0 +1,82 @@
+<import name="layer-bg" src="../layerBg/index"></import>
+
+<template>
+    <layer-bg option="{{layerBgOption}}">
+        <div class="loading">
+            <div>
+                <progress type="circular"></progress>
+                <text if="option.text">{{option.text}}</text>
+            </div>
+        </div>
+    </layer-bg>
+</template>
+
+<script>
+    export default {
+        props: ['option'],
+        data() {
+            return {
+                layerBgOption: {
+                    show: false,
+                    background: 'rgba(0,0,0,.2)',
+                    autoClose: false
+                },
+                defaultOption: {
+                    show: false,
+                    text: ''
+                }
+            }
+        },
+        onInit() {
+            Object.keys(this.defaultOption).forEach(key => {
+                let methodName = key.replace(/^\w/, function ($0) {
+                    return `update${$0.toUpperCase()}`
+                })
+
+                this.$watch(`option.${key}`, methodName)
+                this[methodName]()
+            })
+        },
+        updateShow() {
+            if (this.option.hasOwnProperty('show')) {
+                this.$set('layerBgOption.show', this.option.show)
+                this.$set('layerBgOption.background', this.option.background)
+            } else {
+                this.$set('option.show', false)
+            }
+        },
+        updateText() {
+            !this.option.hasOwnProperty('text') && this.$set('option.text', this.defaultOption.text)
+        }
+    }
+</script>
+<style scoped>
+    .loading {
+        width: 540px;
+        justify-content: center;
+    }
+
+    .loading progress {
+        width: 48px;
+        height: 48px;
+        color: #f76c5b;
+    }
+
+    .loading>div {
+        padding: 25px 40px;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 25px;
+        background-color: rgba(71, 71, 71, .8);
+    }
+
+    .loading image {
+        margin: 9px 0;
+    }
+
+    .loading text {
+        margin-top: 7px;
+        color: #ffffff;
+        font-size: 34px;
+    }
+</style>

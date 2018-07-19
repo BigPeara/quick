@@ -1,0 +1,206 @@
+<import name="cordBook" src="../Components/book/cordBook.ux"></import>
+<template>
+    <div class="read-record">
+        <div class="order-info div-tabbar">
+            <div class="chapter-order" onclick="showContent(1)">
+                <text class="first {{type == 1 ? 'active' : ''}}">我的书架</text>
+                <div class="select-line" style="background-color: {{type == 1?'#f76c5b':'#ffffff'}}"></div>
+            </div>
+            <div class="all-order" onclick="showContent(2)">
+                <text class="{{type == 2 ? 'active' : ''}}">阅读记录</text>
+                <div class="select-line" style="background-color: {{type == 2?'#f76c5b':'#ffffff'}}"> </div>
+            </div>
+        </div>
+        <div class="div-tabcontent">
+            <div class="recharge">
+                <refresh @refresh="refresh" refreshing="{{isRefreshing}}">
+                    <list onscrollbottom="loadMoreData" class="cordBook-list">
+                        <!-- 列表 -->
+                        <block for="item in readCord">
+                            <list-item type="product" class="cordBook-li">
+                                <cordBook data="{{item}}"></cordBook>
+                            </list-item>
+                        </block>
+                        <!-- 加载更多，type属性自定义命名为loadMore -->
+                        <list-item type="loadMore" class="load-more">
+                            <progress type="circular" show="{{hasMoreData}}"></progress>
+                            <text show="{{hasMoreData}}">加载更多</text>
+                            <text show="{{!hasMoreData && !isRefreshing}}">我是有底线的</text>
+                        </list-item>
+                    </list>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    import api from '../api/personData';
+    import bookcaseService from '../api/bookcaseService';
+    export default {
+        data: {
+            readCord: [],
+            hasMoreData: false,
+            isRefreshing: true,
+            page: 1,
+            type: 1,
+            gType: 0,
+            isShow: false,
+        },
+        onInit() {
+            this.refresh(); //获取阅读记录
+            if (this.type == 1) {
+                this.$page.setTitleBar({ text: "我的书架" });
+            } else {
+                this.$page.setTitleBar({ text: "阅读记录" });
+            }
+        },
+        showContent(num) {
+            if (this.type == num) {
+                return;
+            }
+            this.type = num;
+            this.readCord = [];
+            if (num == 2) {
+                this.gType = 1001;
+                this.refresh();
+                this.$page.setTitleBar({ text: "阅读记录" });
+            } else {
+                this.gType = 0;
+                this.refresh();
+                this.$page.setTitleBar({ text: "我的书架" });
+            }
+        },
+        refresh() {
+            this.isShow = true;
+            this.isRefreshing = true;
+            this.hasMoreData = false;
+            this.page = 1;
+            let params = {
+                pageIndex: this.page,
+                pageSize: 10
+            }
+            if (this.gType == 1001) {
+                params.gType = 1001
+            }
+            api.bookInit(params).then(res => {
+                this.readCord = [];
+                let lists = res.data.items
+                if (lists.length < 10) {
+                    this.hasMoreData = false;
+                } else {
+                    this.hasMoreData = true;
+                }
+                for (let i in lists) {
+                    this.readCord.push(lists[i])
+                }
+                this.isRefreshing = false;
+            })
+        },
+        get() {
+            this.hasMoreData = true;
+            api.bookInit({ pageIndex: this.page, pageSize: 10 }).then(res => {
+                let lists = res.data.items
+                if (lists.length < 10) {
+                    this.hasMoreData = false;
+                }
+                for (let i in lists) {
+                    this.readCord.push(lists[i])
+                }
+            })
+        },
+        // 获取更多纪录
+        loadMoreData() {
+            if (this.hasMoreData) {
+                this.page++;
+                this.get();
+            }
+        },
+    }
+</script>
+<style scoped>
+    .read-record {
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        background-color: #ececec;
+    }
+
+    /*  */
+
+    .order-info {
+        height: 90px;
+        background-color: #ffffff;
+        border-bottom-width: 1px;
+        border-color: #e5e5e5;
+
+    }
+
+    .order-info text {
+        width: 100%;
+        text-align: center;
+    }
+
+    .all-order {
+        flex-direction: column;
+        font-size: 30px;
+        color: #999999;
+        width: 49.5%;
+        height: 90px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chapter-order {
+        flex-direction: column;
+        font-size: 30px;
+        color: #999999;
+        width: 49.5%;
+        height: 90px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chapter-order .first {
+
+        border-right-width: 2px;
+        border-color: #e6e6e6;
+    }
+
+    .order-info .active {
+        color: #f76c5b;
+    }
+
+    .select-line {
+        width: 32px;
+        height: 2px;
+        margin-top: 4px;
+    }
+
+
+    progress {
+        color: #f76c5b;
+    }
+
+    refresh {
+        progress-color: #f76c5b;
+    }
+
+    .cordBook-list {
+        flex: 1;
+        background-color: #ffffff;
+    }
+
+    .cordBook-li {
+        flex: 1;
+    }
+
+    .load-more {
+        height: 80px;
+        line-height: 80px;
+        justify-content: center;
+    }
+
+    .load-more text {
+        font-size: 24px;
+        color: #c5c5c5;
+    }
+</style>

@@ -1,0 +1,94 @@
+<import name="specialBook" src="../../Components/book/specialBook.ux"></import>
+<template>
+    <div class="views-book-list">
+        <refresh @refresh="refresh" refreshing="{{isRefreshing}}">
+        <list class="book-list" onscrollbottom="loadMoreData" scrollpage="true">
+            <block for="item in bookList">
+                <list-item type="product" class="content-item">
+                    <specialBook bookinfo="{{item}}"></specialBook>
+                </list-item>
+            </block>
+            <!-- 加载更多，type属性自定义命名为loadMore -->
+            <list-item type="loadMore" class="load-more">
+                <progress type="circular" show="{{hasMoreData}}"></progress>
+                <text show="{{hasMoreData}}">加载更多</text>
+                <text show="{{!hasMoreData && !isRefreshing}}">我是有底线的</text>
+            </list-item>
+        </list>
+    </div>
+</template>
+<script>
+    import api from '../../api/bookData';
+    import prompt from '@system.prompt';
+    export default {
+        data() {
+            return {
+                page: 1,
+                state: 0,
+                hasMoreData: false,
+                isRefreshing: true,
+                bookList: []
+            }
+        },
+        onInit() {
+            this.refresh()
+        },
+        refresh() {
+            this.isRefreshing = true;
+            this.page = 1;
+            api.specialBook({ pageSize: 10, pageIndex: this.page}).then(res => {
+                this.bookList = [];
+                let result = res.data.list;
+                if (result.length < 10) {
+                    this.hasMoreData = false;
+                } else {
+                    this.hasMoreData = true;
+                }
+                for (let i in result) {
+                    this.bookList.push(result[i])
+                }
+                this.isRefreshing = false;
+            })
+        },
+        get() {
+            this.hasMoreData = true;
+            api.specialBook({ pageSize: 10, pageIndex: this.page}).then(res => {
+                let result = res.data.list;
+                if (result.length < 10) {
+                    this.hasMoreData = false;
+                }
+                for (let i in result) {
+                    this.bookList.push(result[i])
+                }
+            })
+        },
+        loadMoreData() {
+            if (this.hasMoreData) {
+                this.page++;
+                this.get();
+            }
+        },
+    }
+</script>
+
+<style scoped>
+    progress {
+        color: #f76c5b;
+    }
+    refresh {
+        progress-color: #f76c5b;
+    }
+    .load-more {
+        height: 80px;
+        line-height: 80px;
+        justify-content: center;
+    }
+
+    .load-more text {
+        font-size: 24px;
+        color: #c5c5c5;
+    }
+    .views-book-list{
+        background-color: #ffffff;
+    }
+</style>

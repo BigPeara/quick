@@ -1,0 +1,60 @@
+<template>
+    <div class="book-container">
+        <div class="book-Con">
+            <div for="item in bookList" class="book-item" onclick="route(item)">
+                <image src="{{config.COVER_BASE_URL + item.cover}}" class="book-cover"></image>
+                <text class="book-name">{{item.booktitle}}</text>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    import router from '@system.router';
+    import config from '../../utils/urlConfig';
+    export default {
+        props: ["bookList"],
+        data:{
+            config: {}
+        },
+        onInit(){
+            this.config = config
+        },
+        route(item){
+            router.push({
+                uri: 'Detail',
+                params:{
+                    bid: item.id 
+                }
+            })
+        }
+    }
+</script>
+
+<style>
+    .book-container .book-Con {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .book-container .book-Con .book-item {
+        width: 28%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .book-container .book-Con .book-cover {
+        height: 258px;
+        display: flex;
+        width: 100%;
+        border-radius: 10px;
+    }
+
+    .book-container .book-name {
+        padding-top: 15px;
+        font-size: 32px;
+        color: #171717;
+        lines: 1;
+        text-overflow: ellipsis;
+    }
+</style>

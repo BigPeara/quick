@@ -1,0 +1,201 @@
+{
+  "package": "com.youkongt.reader",
+  "name": "悠空网-先行版",
+  "versionName": "1.0.0",
+  "versionCode": "1",
+  "minPlatformVersion": "1000",
+  "icon": "/Common/imgs/logo.png",
+  "features": [
+    {
+      "name": "system.prompt"
+    },
+    {
+      "name": "system.router"
+    },
+    {
+      "name": "system.shortcut"
+    },
+    {
+      "name": "system.fetch"
+    },
+    {
+      "name": "system.storage"
+    },
+    {
+      "name": "system.webview"
+    },
+    {
+      "name": "service.alipay"
+    },
+    {
+      "name": "service.wxpay",
+      "params": {
+        "package": "com.yokong.reader",
+        "sign": "539978f8711a3665095293c211d12eec",
+        "url": "http://client.h5sdk.yokong.com/pay/sdk/default_35795.aspx"
+      }
+    },
+    {
+      "name": "system.device"
+    }
+  ],
+  "permissions": [
+    {
+      "origin": "*"
+    }
+  ],
+  "config": {
+    "logLevel": "log",
+    "designWidth": 750,
+    "debug": true
+  },
+  "router": {
+    "entry": "Views/Read",
+    "pages": {
+      "Index": {
+        "component": "index"
+      },
+      "Mine": {
+        "component": "index"
+      },
+      "Bookstorage": {
+        "component": "index"
+      },
+      "Bookcase": {
+        "component": "index"
+      },
+      "Detail": {
+        "component": "index"
+      },
+      "Views/Comments": {
+        "component": "index"
+      },
+      "Views/Read": {
+        "component": "index"
+      },
+      "Views/Catalog": {
+        "component": "index"
+      },
+      "Views/Login": {
+        "component": "index"
+      },
+      "Views/UserInfo": {
+        "component": "index"
+      },
+      "Views/SubRecords": {
+        "component": "index"
+      },
+      "Views/Recharge": {
+        "component": "index"
+      },
+      "Views/ReadCord": {
+        "component": "index"
+      },
+      "Views/Service": {
+        "component": "index"
+      },
+      "Views/Bound": {
+        "component": "index"
+      },
+      "Views/Search": {
+        "component": "index"
+      },
+      "Views/Classify": {
+        "component": "index"
+      },
+      "Views/BookList": {
+        "component": "index"
+      },
+      "Views/SpecialBookList": {
+        "component": "index"
+      },
+      "Views/Pay": {
+        "component": "index"
+      }
+    }
+  },
+  "display": {
+    "backgroundColor": "#ECECEC",
+    "titleBarBackgroundColor": "#f76c5b",
+    "titleBarTextColor": "#ffffff",
+    "menu": false,
+    "pages": {
+      "Index": {
+        "titleBarText": "悠空网",
+        "menu": false
+      },
+      "Mine": {
+        "titleBarText": "悠空网",
+        "menu": false
+      },
+      "Bookcase": {
+        "titleBarText": "悠空网",
+        "menu": false
+      },
+      "Bookstorage": {
+        "titleBarText": "悠空网",
+        "menu": false
+      },
+      "Detail": {
+        "titleBarText": "悠空网",
+        "menu": false
+      },
+      "Views/Comments": {
+        "titleBarText": "评论",
+        "menu": false
+      },
+      "Views/Catalog": {
+        "titleBarText": "悠空网",
+        "menu": false
+      },
+      "Views/Read": {
+        "titleBarText": "悠空网",
+        "menu": false
+      },
+      "Views/Login": {
+        "titleBarText": "登录",
+        "menu": false
+      },
+      "Views/UserInfo": {
+        "titleBarText": "个人资料",
+        "menu": false
+      },
+      "Views/SubRecords": {
+        "titleBarText": "消费记录",
+        "menu": false
+      },
+      "Views/Recharge": {
+        "titleBarText": "充值记录",
+        "menu": false
+      },
+      "Views/ReadCord": {
+        "titleBarText": "阅读记录",
+        "menu": false
+      },
+      "Views/Service": {
+        "titleBarText": "客服咨询",
+        "menu": false
+      },
+      "Views/Bound": {
+        "titleBarText": "绑定手机号",
+        "menu": false
+      },
+      "Views/Search": {
+        "titleBarText": "搜索",
+        "menu": false
+      },
+      "Views/Classify": {
+        "titleBarText": "分类",
+        "menu": false
+      },
+      "Views/SpecialBookList": {
+        "titleBarText": "热销短篇",
+        "menu": false
+      },
+      "Views/Pay": {
+        "titleBarText": "充值页面",
+        "menu": false
+      }
+    }
+  }
+}

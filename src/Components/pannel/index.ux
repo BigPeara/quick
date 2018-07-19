@@ -1,0 +1,88 @@
+<template>
+    <div class="pannel" onclick="route">
+        <div class="pannel-icon">
+            <image src="{{icon}}"></image>
+        </div>
+        <div class="pannel-title">
+            <text>{{title}}</text>
+        </div>
+        <div class="pannel-label">
+            <text class="label-text">{{mark}}</text>
+            <image src="../Common/imgs/next.png"></image>
+        </div>
+    </div>
+</template>
+<script>
+    import router from '@system.router';
+    import prompt from '@system.prompt'
+    export default {
+        props: ['icon', 'title', 'mark', 'url','type'],
+        route() {
+            let params = {};
+            if(this.type==2){
+                params.type = 2;
+                params.gType = 1001
+            }
+            if (this.url) {
+                router.push({
+                    uri: this.url,
+                    params: params
+                })
+            } else {
+                prompt.showDialog({
+                    title: '提示',
+                    message: '该功能正在建设中，您可以到悠空官网享受所有权益！',
+                    buttons: [
+                        {
+                            text: '确定',
+                            color: '#f76c5b'
+                        }
+                    ],
+                    success: function (data) {
+                        console.log('handling callback')
+                    },
+                    cancel: function () {
+                        console.log('handling cancel')
+                    },
+                    fail: function (data, code) {
+                        console.log(`handling fail, code = ${code}`)
+                    }
+                })
+            }
+        }
+    }
+</script>
+<style>
+    .pannel {
+        padding: 0 30px;
+        width: 750px;
+        height: 110px;
+        background-color: #ffffff;
+        font-size: 32px;
+        border-width: 0.5px;
+        border-color: #e4e4e4;
+    }
+
+    .pannel .pannel-icon image {
+        margin-top: 38px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .pannel .pannel-title {
+        flex: 1;
+        margin-left: 28px;
+        color: #333333;
+    }
+
+    .pannel .pannel-label {
+        font-size: 28px;
+        color: #99a9c3;
+    }
+
+    .pannel .pannel-label image {
+        margin-top: 38px;
+        width: 36px;
+        height: 36px;
+    }
+</style>

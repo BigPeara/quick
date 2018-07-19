@@ -1,0 +1,86 @@
+<template>
+    <div class="container">
+        <div class="book-Con">
+            <div for="items in book" class="book-item" onclick="route(items)">
+                <image src="{{config.COVER_BASE_URL + items.cover}}" class="book-cover"></image>
+                <div class="book-info">
+                    <text class="book-name">{{items.booktitle}}</text>
+                    <text class="book-introd">{{items.Introduction}}</text>
+                    <div class="book-author">
+                        <div>
+                            <!-- <image src="{{}}"></image> -->
+                            <text>{{items.author}}</text>
+                        </div>
+                        <text>{{items.tclass}}</text>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    import router from '@system.router';
+    import config from '../../utils/urlConfig';
+    export default {
+        props: ["book"],
+        data:{
+            config: {}
+        },
+        onInit(){
+            this.config = config
+        },
+        route(item){
+            router.push({
+                uri: 'Detail',
+                params:{
+                    bid: item.id 
+                }
+            })
+        }
+    }
+</script>
+
+<style scoped>
+    .container .book-Con {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .container .book-Con .book-item {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 40px;
+    }
+
+    .container .book-Con .book-cover {
+        height: 258px;
+        display: flex;
+        width: 190px;
+        border-radius: 10px;
+    }
+
+    .container .book-Con .book-info {
+        flex: 1;
+        height: 258px;
+        display: flex;
+        flex-direction: column;
+        margin-left: 20px;
+    }
+
+    .container .book-Con .book-name {
+        font-size: 32px;
+        line-height: 32px;
+        color: #000000;
+    }
+
+    .container .book-Con .book-introd {
+        line-height: 40px;
+        font-size: 26px;
+        margin-top: 25px;
+        lines: 2;
+        text-overflow: clip;
+    }
+</style>

@@ -1,0 +1,28 @@
+<import name="classify" src="./classify.ux"></import>
+<template>
+    <div class="book-classify">  
+        <classify for="item in classifies" data="{{item}}"></classify>
+    </div>
+</template>
+<script>
+    export default{
+        data(){
+            return{
+                test: '12',
+                classifies:[
+                    {title:'频道',field: 'channelid',lists:[{id:1,name:'男生'},{id:2,name:'女生'}]},
+                    {title:'分类',field: 'type',lists:[{id:1,name:'古代言情'},{id:2,name:'现在言情'},{id:3,name:'玄幻言情'},{id:4,name:'仙侠奇缘'},{id:5,name:'浪漫青春'},{id:6,name:'耽美小说'},{id:7,name:'游戏竞技'},{id:8,name:'科幻空间'},{id:9,name:'玄幻灵异'},]},
+                    {title:'小类',field: 'channelid',lists:[{id:1,name:'青春疼痛'},{id:2,name:'叛逆成长'}]},
+                    {title:'排序',field: 'channelid',lists:[{id:1,name:'人气榜'},{id:2,name:'畅销榜'},{id:3,name:'推荐榜'},{id: 4,name: '收藏榜'},{id: 5,name: '打赏榜'}]},
+                    {title:'状态',field: 'channelid',lists:[{id:1,name:'连载中'},{id:2,name:'已完结'}]},
+                ]
+            }
+        }
+    }
+</script>
+<style>
+    .book-classify {
+        flex-direction: column;
+        padding: 29px 30px;
+    }
+</style>

@@ -1,0 +1,103 @@
+<import name="normalBook" src="../../Components/book/normalBook.ux"></import>
+<template>
+    <div class="views-book-list">
+        <refresh @refresh="refresh" refreshing="{{isRefreshing}}">
+        <list class="book-list" onscrollbottom="loadMoreData" scrollpage="true">
+            <block for="item in bookList">
+                <list-item type="product" class="content-item">
+                    <normalBook bookinfo="{{item}}"></normalBook>
+                </list-item>
+            </block>
+            <!-- 加载更多，type属性自定义命名为loadMore -->
+            <list-item type="loadMore" class="load-more">
+                <progress type="circular" show="{{hasMoreData}}"></progress>
+                <text show="{{hasMoreData}}">加载更多</text>
+                <text show="{{!hasMoreData && !isRefreshing}}">我是有底线的</text>
+            </list-item>
+        </list>
+    </div>
+</template>
+<script>
+    import api from '../../api/bookData';
+    import prompt from '@system.prompt';
+    export default {
+        data() {
+            return {
+                page: 1,
+                state: 0,
+                hasMoreData: false,
+                isRefreshing: true,
+                bookList: []
+            }
+        },
+        onInit() {
+            if(this.state == 0){
+	            this.$page.setTitleBar({ text: "排行" });
+            }else{
+                this.$page.setTitleBar({ text: "完本" });
+            }
+            this.refresh()
+        },
+        refresh() {
+            this.isRefreshing = true;
+            this.page = 1;
+            api.bookFilter({ pageSize: 10, pageIndex: this.page, type: 0, order: 1, state: this.state, vip: 0 }).then(res => {
+                this.bookList = [];
+                let result = res.data;
+                if (result.length < 10) {
+                    this.hasMoreData = false;
+                } else {
+                    this.hasMoreData = true;
+                }
+                for (let i in result) {
+                    this.bookList.push(result[i])
+                }
+                this.isRefreshing = false;
+            })
+        },
+        get() {
+            this.hasMoreData = true;
+            api.bookFilter({ pageSize: 10, pageIndex: this.page, type: 0, order: 1, state: this.state, vip: 0 }).then(res => {
+                let result = res.data;
+                if (result.length < 10) {
+                    this.hasMoreData = false;
+                }
+                for (let i in result) {
+                    this.bookList.push(result[i])
+                }
+            })
+        },
+        loadMoreData() {
+            if (this.hasMoreData) {
+                this.page++;
+                this.get();
+            }
+        },
+    }
+</script>
+
+<style scoped>
+    progress {
+        color: #f76c5b;
+    }
+
+    refresh {
+        progress-color: #f76c5b;
+    }
+
+    .load-more {
+        height: 80px;
+        line-height: 80px;
+        justify-content: center;
+    }
+
+    .load-more text {
+        font-size: 24px;
+        color: #c5c5c5;
+    }
+
+    .views-book-list {
+        padding: 15px 30px;
+        background-color: #ffffff;
+    }
+</style>

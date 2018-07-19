@@ -1,0 +1,57 @@
+
+<template>
+        <div class="service">
+            <text class="time">时间：9:00-22:00（含节假日）</text>
+            <div class="box">
+                <text class="describe">客服公众号:</text>
+                <text class="content">悠空读物</text>
+            </div>
+            <div class="box"> 
+                <text class="describe">客服QQ:</text>
+                <text class="content">228768606</text>
+            </div>
+            <div class="box">
+                <text class="describe">客服电话:</text>
+                <a class="content" href="tel:025-57955567">025-57955567</a>
+            </div>
+    
+        </div>
+    
+    </template>
+    <script>
+        export default {
+            data() {
+                return {
+    
+                }
+            }
+        }
+    </script>
+    <style scoped>
+        .service { 
+            padding: 30px;
+            flex-direction: column;
+            background-color: #ffffff;
+    
+        }
+        .box{
+          height: 60px;
+          align-items: center;
+          margin-bottom: 5px;
+        }
+        .time{
+            font-size: 30px;
+            color: #333333;
+            margin-bottom: 5px;
+            height: 60px;
+        }
+        .describe {
+            font-size: 30px;
+            color: #333333;
+        }
+        .content {
+            color: #f76c5b;
+            font-size: 30px;
+            margin-left:10px;
+        }
+    </style>

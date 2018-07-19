@@ -1,0 +1,81 @@
+<template>
+    <div class="luochu-page">
+        <div class="flexible-tabs">
+            <tabs>
+                <tab-content class="flexible-tab-content">
+                    <slot></slot>
+                </tab-content>
+            </tabs>
+            <div class="flexible-tabbar">
+                <div class="tab-item" onclick="route('Bookstorage')">
+                    <image src="{{type=='bookstorage'?'../Common/imgs/bookstorage-active.png':'../Common/imgs/bookstorage.png'}}"></image>
+                    <text class="{{type=='bookstorage'?'active':'tab-text'}}">书城</text>
+                </div>
+                <div class="tab-item" onclick="route('Bookcase')">
+                    <image src="{{type=='bookcase'?'../Common/imgs/bookbase-active.png':'../Common/imgs/bookbase.png'}}"></image>
+                    <text class="{{type=='bookcase'?'active':'tab-text'}}">书架</text>
+                </div>
+                <div class="tab-item" onclick="route('Mine')">
+                    <image src="{{type=='mine'?'../Common/imgs/user-active.png':'../Common/imgs/user.png'}}"></image>
+                    <text class="{{type=='mine'?'active':'tab-text'}}">我的</text>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    import router from '@system.router'
+    export default{
+        props: ['type'],
+        route(uri){
+            router.replace({
+                uri: uri,
+            })
+        }
+    }
+</script>
+<style scoped>
+    
+
+     .luochu-page {
+        background-color: #ececec;
+    }
+
+    .luochu-page .flexible-tabs {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .flexible-tabs .flexible-tabbar {
+        display: flex;
+        border-top-width: 2px;
+        border-top-color: #cecece;
+        height: 100px;
+    }
+
+    .flexible-tabbar .tab-item {
+        flex: 1;
+        /* padding: 10px; */
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        font-size: 22px;
+        background-color: #ffffff;
+    }
+
+    .tab-item .tab-icon {
+        width: 56px;
+        height: 56px;
+    }
+
+    .tab-item .tab-text {
+        font-size: 22px;
+        color: #919292;
+    }
+
+    .tab-item .active {
+        font-size: 22px;
+        color: #f76c5b;
+    }
+</style>

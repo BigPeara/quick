@@ -1,0 +1,402 @@
+<import name="normalBook" src="../../Components/book/normalBook.ux"></import>
+<template>
+    <div class="search">
+        <div class="search-box">
+            <div class="search-detail">
+                <image src="../../Common/imgs/search.png" class="icon-search"></image>
+                <input type="text" class="search-input" id="search-input" value="{{searchValue}}" placeholder="最强村医"
+                    @change="onchange">
+                <!-- show="{{showEmpty}}" -->
+                <image src="../../Common/imgs/close.png" class="icon-close" onclick="empty" style="opacity:{{showEmpty ? '1':'0'}};"></image>
+            </div>
+            <text class="search-title" onclick="search">搜索</text>
+        </div>
+        <!-- 未搜索的时候的热搜词和推荐文章 -->
+        <div class="show-search" if="!isSeach">
+            <!-- 热搜词 -->
+            <div class="hot-search">
+                <text class="hot-title">热门搜索</text>
+                <div class="hot-content">
+                    <!-- <div class="labels"><text class="search-label">最强村医</text></div> -->
+                    <div class="labels" for="{{item in searchHot}}" onclick="hotsearch(item)">
+                        <text class="search-label">{{item}}</text>
+                    </div>
+                </div>
+
+            </div>
+            <!--  大家都在看-->
+            <div class="recommned-look">
+                <text class="look-headline">大家都在看</text>
+                <div class="all-read">
+                    <normalBook for="item in allBooklist" bookinfo="{{item}}"></normalBook>
+                </div>
+            </div>
+        </div>
+
+
+        <!--搜索结果  -->
+        <div class="result-box" if="isSeach">
+            <!-- 文字切换 -->
+            <div class="result-headline div-tabbar">
+                <div class="{{type == 0 ? 'active' : ''}}" onclick="showContent(0)">
+                    <text class="{{type == 0 ? 'selected' : ''}}">全部</text>
+                </div>
+                <div class="{{type == 1 ? 'active' : ''}}" onclick="showContent(1)">
+                    <text class="{{type == 1 ? 'selected' : ''}}">书名</text>
+                </div>
+                <div class="{{type == 2 ? 'active' : ''}}" onclick="showContent(2)">
+                    <text class="{{type == 2 ? 'selected' : ''}}">作者</text>
+                </div>
+            </div>
+            <!-- 内容切换 -->
+            <div class="result-detail div-tabcontent">
+                <div class="has-result" if="hasResult">
+                    <list class="book-list" onscrollbottom="loadMoreData" scrollpage="true">
+                        <block for="item in resultData">
+                            <list-item type="product" class="content-item">
+                                <normalBook bookinfo="{{item}}"></normalBook>
+                            </list-item>
+                        </block>
+                        <!-- 加载更多，type属性自定义命名为loadMore -->
+                        <list-item type="loadMore" class="load-more">
+                            <progress type="circular" show="{{hasMoreData}}"></progress>
+                            <text show="{{hasMoreData}}">加载更多</text>
+                            <text show="{{!hasMoreData}}">我是有底线的</text>
+                        </list-item>
+                    </list>
+                </div>
+                <div class="no-result" if="!hasResult">
+                    <image src="../../Common/imgs/no-search-result.png"></image>
+                    <text>暂未搜索到结果，请重新搜索</text>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+</template>
+<script>
+    import prompt from '@system.prompt';
+    import api from '../../api/bookData'
+
+    export default {
+        data: {
+            searchHot: [],
+            allBooklist: [],
+            bookList: [],
+            showEmpty: false,
+            searchMore: false,
+            searchPage: true,
+            showPrompt: false,
+            page: 1,
+            type: '0',
+            pager: {
+                pageIndex: 1,
+                pageSize: 10,
+                loadFinished: false,
+                isloading: false,
+                reset() {
+                    this.records = 0;
+                    this.pageIndex = 1;
+                    this.loadFinished = false;
+                }
+            },
+            works: {
+                type: 0,
+                content: "",
+                labels: ""
+            },
+            searchValue: '', //输入的值,
+            isSeach: false, //搜索状态
+            resultData: [], //搜索结果
+            page: 1, //搜索的页码
+            hasMoreData: true, //是否有更多数据
+            hasResult: true,
+            tabTitle: ["全部", "书名", "作者"]
+        },
+        onInit() {
+            this.getSearch();
+        },
+        //监听数据变化
+        onchange(e) {
+            this.searchValue = e.value
+            if (this.searchValue) {
+                this.showEmpty = true
+            } else {
+                this.showEmpty = false
+            }
+        },
+        //搜索进行时
+        search() {
+            this.hasResult = true;
+            api.search({ pageSize: 10, pageIndex: this.page, content: this.searchValue || '最强村医', type: this.type }).then(res => {
+                let result = res.data;
+                if (result.length < 10) {
+                    this.hasMoreData = false;
+                }
+                this.isSeach = true;
+                this.resultData = result;
+                //判断是否有值
+                if (this.resultData.length == 0) {
+                    this.hasResult = false;
+                }
+                this.$element("search-input").focus({
+                    focus: false
+                })
+            })
+        },
+        //搜索进行时
+        searchLoad() {
+            this.hasResult = true;
+            api.search({ pageSize: 10, pageIndex: this.page, content: this.searchValue || '最强村医', type: this.type }).then(res => {
+                let result = res.data;
+                if (result.length < 10) {
+                    this.hasMoreData = false;
+                }
+                this.isSeach = true;
+                for (let i in result) {
+                    this.resultData.push(result[i])
+                }
+                //判断是否有值
+                if (this.resultData.length == 0) {
+                    this.hasResult = false;
+                }
+                this.$element("search-input").focus({
+                    focus: false
+                })
+            })
+        },
+        // 获取更多的数据
+        loadMoreData() {
+            if(this.hasMoreData){
+                this.page++;
+                this.searchLoad();
+            }
+        },
+        //热搜词搜索
+        hotsearch(item) {
+            this.searchValue = item;
+            this.$element("search-input").focus({
+                focus: false
+            })
+            this.search();
+        },
+        // 切换条件
+        showContent(num) {
+            if (num == this.type) {
+                return;
+            }
+            this.page = 1;
+            this.resultData = [];
+            this.type = num;
+            this.search();
+        },
+        // 清空输入框
+        empty() {
+            this.searchValue = "";
+            this.showEmpty = false;
+            this.isSeach = false;
+            this.$element("search-input").focus({
+                focus: false
+            })
+        },
+        //获取热搜词
+        getSearch() {
+            let that = this
+            api.searchHot({
+                pageIndex: this.page,
+                pageSize: 10
+            }).then(res => {
+                that.searchHot = res.data.hot.split(";");
+                that.allBooklist = res.data.book;
+                that.keyName = res.data.searchHot[0];
+
+            })
+        },
+    }
+</script>
+<!--  flex-direction: column  justify-content: space-between;
+        align-items: center; -->
+<style scoped>
+    progress {
+        color: #f76c5b;
+    }
+
+    .search {
+        flex-direction: column;
+        background-color: #ffffff;
+    }
+
+    .search-box {
+        justify-content: space-between;
+        padding: 30px;
+        background-color: #ececec;
+    }
+    
+    .search-detail {
+        justify-content: space-between;
+        padding: 0 30px;
+        flex: 1;
+        height: 70px;
+        background-color: #ffffff;
+        border-radius: 60px;
+        align-items: center;
+    }
+
+    .search-input {
+        flex: 1;
+        padding-left: 10px;
+        font-size: 30px;
+    }
+
+    .search-title {
+        margin-left: 30px;
+        font-size: 32px;
+        color: #333333;
+    }
+
+    .icon-search {
+        width: 40px;
+        height: 40px;
+    }
+
+    .icon-close {
+        width: 30px;
+        width: 30px;
+    }
+
+    .show-search {
+        flex-direction: column;
+    }
+
+    .hot-search {
+        flex-direction: column;
+        background-color: #ffffff;
+        padding: 0 30px;
+        border-bottom-width: 20px;
+        border-color: #ececec;
+    }
+
+    .hot-title {
+        padding: 30px 0;
+        color: #999999;
+        font-size: 30px;
+    }
+
+    .hot-content {
+        flex-wrap: wrap;
+
+    }
+
+    .labels {
+        margin: 0 24px 30px 0;
+        border-color: #cccccc;
+        border-width: 1px;
+        padding: 6px 12px;
+        border-radius: 30px;
+        align-items: center;
+        justify-content: center;
+
+    }
+
+    .search-label {
+        font-size: 26px;
+        color: #333333;
+
+
+    }
+
+    .recommned-look {
+        padding: 0 30px;
+        background-color: #ffffff;
+        flex-direction: column;
+    }
+
+    .look-headline {
+        padding-top: 30px;
+        font-size: 32px;
+        color: #999999;
+    }
+
+    .result-box {
+        flex-direction: column;
+    }
+
+    .result-headline {
+        width: 100%;
+        height: 76px;
+        background-color: #ffffff;
+        border-bottom-width: 1px;
+        border-color: #ececec;
+        /* background-color: green; */
+    }
+
+    .result-headline div {
+        flex-direction: row;
+        width: 33.33%;
+        /* background-color: red; */
+        justify-content: center;
+
+
+    }
+
+    .result-headline div text {
+        /* width: 50%; */
+        font-size: 30px;
+        color: #7c7c8c;
+
+    }
+
+    .result-box .result-headline .active {
+        /* color: #f76c5b; */
+        border-bottom-width: 1px;
+        border-color: #f76c5b;
+
+
+    }
+
+    .result-box .result-headline .active .selected {
+
+        color: #f76c5b;
+    }
+
+    .result-detail {
+        padding: 0 30px;
+        background-color: #ffffff;
+    }
+
+    .all-read {
+        flex-direction: column;
+    }
+
+    .load-more {
+        height: 80px;
+        line-height: 80px;
+        justify-content: center;
+    }
+
+    .load-more text {
+        font-size: 24px;
+        color: #c5c5c5;
+    }
+
+    .no-result {
+        flex-direction: column;
+        width: 750px;
+        height: 600px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .no-result image {
+        width: 220px;
+        height: 120px;
+    }
+
+    .no-result text {
+        margin-top: 40px;
+        font-size: 24px;
+        color: #666666;
+    }
+</style>

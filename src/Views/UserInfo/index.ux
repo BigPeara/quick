@@ -1,0 +1,129 @@
+<template>
+    <div class="user-info">
+        <div class="user-info-lists">
+            <div class="user-detail">
+                <div class="left-describe">
+                    <text>头像</text>
+                </div>
+                <!-- <div class="user-head"> -->
+                    <image src="{{userData.avatar}}" class="headImg"></image>
+
+                <!-- </div> -->
+            </div>
+            <div class="user-detail">
+                    <div class="left-describe">
+                        <text>用户ID</text>
+                    </div>
+                    <div class="right-info">
+                        <text>{{userData.id}}</text>
+                    </div>
+            </div>
+            <div class="user-detail">
+                    <div class="left-describe">
+                        <text>昵称</text>
+                    </div>
+                    <div class="right-info">
+                        <text>{{userData.nickName}}</text>
+                        <image src="../Common/imgs/next.png" class="nextImg"></image>
+                    </div>
+            </div>
+            <div class="user-detail">
+                    <div class="left-describe">
+                        <text>性别</text>
+                    </div>
+                    <div class="right-info">
+                        <text>{{userData.gender?'男':'女'}}</text>
+                        <image src="../Common/imgs/next.png" class="nextImg"></image>
+                    </div>
+            </div>
+            <div class="user-detail" onclick="linkBound">
+                    <div class="left-describe">
+                        <text>手机号码</text>
+                    </div>
+                    <div class="right-info" show="{{userData.mob==''}}">
+                        <text>去绑定</text>
+                        <image src="../Common/imgs/next.png" class="nextImg"></image>
+                    </div>
+                    <div class="right-info" show="{{userData.mob!=''}}">
+                        <text>{{userData.mob}}</text>
+                    </div>
+            </div>
+        </div>      
+    </div>                
+
+
+</template>
+<script>
+    import api from '../../api/personData';
+    import router from '@system.router'
+    export default {
+        data:{
+            userData: {}
+        },
+        onInit(){
+            this.get();
+        },
+        get(){
+            api.personInfo().then(res=>{
+                this.userData = res.data
+            })
+        },
+        linkBound(){
+            if(this.userData.mob == ''){         
+                router.push({
+                    uri: 'Views/Bound'
+                })
+           
+            }
+        }
+    }
+</script>
+<style scoped>
+    /* justify-content: space-between; flex-direction: column;
+    } */
+
+    .user-info {
+        width: 100%;
+        height: 100%;
+        background-color: #ffffff;
+        flex-direction: column
+    }
+
+    .user-info-lists {
+        flex-direction: column;
+        padding: 0 30px;
+    }
+
+    .user-detail {
+        width: 100%;
+        height: 100px;
+        border-bottom-width: 1px;
+        border-color: #e5e5e5;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .left-describe {
+        color: #333333;
+        font-size: 32px;
+    }
+    /* .user-head {
+        width: 42px;
+        height: 42px;
+       
+        background-color: red;
+    } */
+    .headImg{
+        width: 42px;
+        height: 42px;
+        border-radius: 21px;
+    }
+    .right-info {
+        font-size: 26px;
+        color: #999999;
+    }
+    .nextImg{
+        margin-left: 20px;
+        
+    }
+</style>     

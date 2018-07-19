@@ -1,0 +1,100 @@
+<template>
+    <div class="normal-book" onclick="route">
+        <div class="cover">
+            <image src="{{config.COVER_BASE_URL + bookinfo.cover}}"></image>
+        </div>
+        <div class="book-info">
+            <text class="title">
+                {{bookinfo.booktitle}}
+            </text>
+            <text class="book-intro">{{converStr(bookinfo.Introduction)}}</text>
+            <div class="other">
+                <text class="author">{{bookinfo.author}}</text>
+                <text class="tag" style="background-color:{{bookinfo.state==9?'#d8d8d8':'#F7BDB6'}}">{{bookinfo.state==9?'完结':'连载'}}</text>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    import router from '@system.router';
+    import config from '../../utils/urlConfig';
+    export default {
+        props: ['bookinfo'],
+        data: {
+            config: {}
+        },
+        onInit() {
+            this.config = config
+        },
+        route(item) {
+            router.push({
+                uri: 'Detail',
+                params: {
+                    bid: this.bookinfo.id
+                }
+            })
+        },
+        converStr(str) {
+            var reg = new RegExp("&nbsp;", "g");
+            return str.replace(reg, " ");
+        }
+    }
+</script>
+<style>
+    .normal-book {
+        padding: 30px 0;
+        border-color: #f1f1f1;
+        border-bottom-width: 1px;
+    }
+
+    .normal-book .cover {
+        width: 194px;
+    }
+
+    .normal-book .cover image {
+        width: 194px;
+        height: 260px;
+    }
+
+    .normal-book .book-info {
+        margin-left: 25px;
+        flex: 1;
+        flex-direction: column;
+    }
+
+    .normal-book .book-info .title {
+        line-height: 36px;
+        font-size: 32px;
+        font-weight: bold;
+        color: #333333;
+    }
+
+    .normal-book .book-info .book-intro {
+        margin-top: 40px;
+        color: #666666;
+        font-size: 28px;
+        line-height: 50px;
+        lines: 2;
+        text-overflow: ellipsis;
+    }
+
+    .normal-book .book-info .other {
+        margin-top: 45px;
+    }
+
+    .normal-book .book-info .author {
+        flex: 1;
+        line-height: 36px;
+        color: #7c7c8c;
+        font-size: 24px;
+    }
+
+    .normal-book .book-info .tag {
+        padding: 0 12px;
+        font-size: 22px;
+        height: 36px;
+        line-height: 36px;
+        border-radius: 18px;
+        color: #ffffff;
+    }
+</style>
